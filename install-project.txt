@@ -1,0 +1,2 @@
+dotnet add package Swashbucle.AspNetCore
+dotnet add package Microsoft.AspNetCore.Authentication

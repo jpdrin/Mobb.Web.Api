@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "B9Lpzugx8txkR0rsUCxRvYFtAx5ms2lBhgecfVcDXUw=",
+  "Source": "MobbWeb.Api",
+  "BasePath": "_content/MobbWeb.Api",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
