@@ -40,5 +40,5 @@ jobs:
         application_name: Mobb-Web-Api
         environment_name: Mobb-Web-Api-dev
         version_label: ${{ github.sha }}
-        region: us-east-2
+        region: us-east-1
         deployment_package: ${{ github.workspace }}/out.zip
