@@ -172,12 +172,12 @@ namespace MobbWeb.Api.Repositories
                                    string Telefone_Celular,
                                    DateTime Data_Nascimento_Pessoa,
                                    string Codigo_Usuario_Pessoa,
-                                   string Senha_Pessoa,
-                                   int ID_Cidade,
+                                   string Senha_Pessoa
+                                   /*int ID_Cidade,
                                    string Logradouro_Endereco,
                                    string Bairro_Endereco,
                                    string Complemento,
-                                   string Numero_Logradouro_Endereco)
+                                   string Numero_Logradouro_Endereco*/)
     {
       using (var conn = _db.Connection)
       {
@@ -190,11 +190,11 @@ namespace MobbWeb.Api.Repositories
         parametros.Add("Data_Nascimento_Pessoa", Data_Nascimento_Pessoa);
         parametros.Add("Codigo_Usuario_Pessoa", Codigo_Usuario_Pessoa);
         parametros.Add("Senha_Pessoa", Senha_Pessoa);
-        parametros.Add("ID_Cidade", ID_Cidade);
+        /*parametros.Add("ID_Cidade", ID_Cidade);
         parametros.Add("Logradouro_Endereco", Logradouro_Endereco);
         parametros.Add("Bairro_Endereco", Bairro_Endereco);
         parametros.Add("Complemento", Complemento);
-        parametros.Add("Numero_Logradouro_Endereco", Numero_Logradouro_Endereco);
+        parametros.Add("Numero_Logradouro_Endereco", Numero_Logradouro_Endereco);*/
         parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
         parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
 
