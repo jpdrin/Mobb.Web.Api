@@ -10,10 +10,10 @@ namespace MobbWeb.Api.Models.Input
         public DateTime dataNascimentoPessoa {get; set;}
         public string? codigoUsuarioPessoa {get; set;}
         public string? senhaUsuarioPessoa {get; set;}
-        public int idCidade {get; set;}
+        /*public int idCidade {get; set;}
         public string? logradouroEndereco {get; set;}        
         public string? bairroEndereco {get; set;}
         public string? complementoEndereco {get; set;}
-        public string? numeroLogradouroEndereco {get; set;}
+        public string? numeroLogradouroEndereco {get; set;}*/
     }
 }

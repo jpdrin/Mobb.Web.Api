@@ -8,6 +8,7 @@ namespace MobbWeb.Api.Models.Output
     public string? descricaoAnuncio { get; set; }
     public decimal valorServicoAnuncio { get; set; }
     public int horasServicoAnuncio { get; set; }
+    public string telefoneContatoAnuncio {get; set;}
     public int idCategoriaAnuncio {get; set;}
     public string? nomeCategoriaAnuncio {get; set;}
     public int idCidade {get; set;}

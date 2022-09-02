@@ -23,6 +23,7 @@ namespace MobbWeb.Api.Repositories
                                     string Descricao_Anuncio,
                                     decimal Valor_Servico_Anuncio,
                                     int Horas_Servicos_Anuncio,
+                                    string Telefone_Contato_Anuncio,
                                     string Url_Imagens_Anuncio)
     {
       using (var conn = _db.Connection)
@@ -35,6 +36,7 @@ namespace MobbWeb.Api.Repositories
         parametros.Add("Descricao_Anuncio", Descricao_Anuncio);
         parametros.Add("Valor_Servico_Anuncio", Valor_Servico_Anuncio);
         parametros.Add("Horas_Servicos_Anuncio", Horas_Servicos_Anuncio);
+        parametros.Add("Telefone_Contato_Anuncio", Telefone_Contato_Anuncio);
         parametros.Add("Url_Imagens_Anuncio", Url_Imagens_Anuncio);
         parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
         parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
@@ -75,6 +77,7 @@ namespace MobbWeb.Api.Repositories
                                ,Descricao_Anuncio     
                                ,Valor_Servico_Anuncio 
                                ,Horas_Servicos_Anuncio
+                               ,Telefone_Contato_Anuncio
                                ,ID_Categoria_Anuncio  
                                ,Nome_Categoria_Anuncio
                                ,ID_Cidade             
@@ -100,6 +103,7 @@ namespace MobbWeb.Api.Repositories
             anuncio.descricaoAnuncio = a.Descricao_Anuncio;
             anuncio.valorServicoAnuncio = a.Valor_Servico_Anuncio;
             anuncio.horasServicoAnuncio = a.Horas_Servicos_Anuncio;
+            anuncio.telefoneContatoAnuncio = a.Telefone_Contato_Anuncio;
             anuncio.idCategoriaAnuncio = a.ID_Categoria_Anuncio;
             anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
             anuncio.idCidade = a.ID_Cidade;
@@ -131,6 +135,7 @@ namespace MobbWeb.Api.Repositories
                                ,Anuncios.Descricao_Anuncio
                                ,Anuncios.Valor_Servico_Anuncio
                                ,Anuncios.Horas_Servicos_Anuncio
+                               ,Anuncios.Telefone_Contato_Anuncio
                                ,Categoria_Anuncio.ID_Categoria_Anuncio
                                ,Categoria_Anuncio.Nome_Categoria_Anuncio
                                ,Cidades.ID_Cidade
@@ -159,6 +164,7 @@ namespace MobbWeb.Api.Repositories
             anuncio.descricaoAnuncio = a.Descricao_Anuncio;
             anuncio.valorServicoAnuncio = a.Valor_Servico_Anuncio;
             anuncio.horasServicoAnuncio = a.Horas_Servicos_Anuncio;
+            anuncio.telefoneContatoAnuncio = a.Telefone_Contato_Anuncio;
             anuncio.idCategoriaAnuncio = a.ID_Categoria_Anuncio;
             anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
             anuncio.idCidade = a.ID_Cidade;
@@ -191,6 +197,7 @@ namespace MobbWeb.Api.Repositories
                                ,Anuncios.Descricao_Anuncio
                                ,Anuncios.Valor_Servico_Anuncio
                                ,Anuncios.Horas_Servicos_Anuncio
+                               ,Telefone_Contato_Anuncio
                                ,Categoria_Anuncio.Nome_Categoria_Anuncio
                          FROM dbo.Anuncios WITH (NOLOCK)     
                               INNER JOIN dbo.Categoria_Anuncio WITH (NOLOCK)
@@ -213,6 +220,7 @@ namespace MobbWeb.Api.Repositories
             anuncio.descricaoAnuncio = c.Descricao_Anuncio;
             anuncio.valorServicoAnuncio = c.Valor_Servico_Anuncio;
             anuncio.horasServicoAnuncio = c.Horas_Servicos_Anuncio;
+            anuncio.telefoneContatoAnuncio = c.Telefone_Contato_Anuncio;
             anuncio.nomeCategoriaAnuncio = c.Nome_Categoria_Anuncio;
 
             return anuncio;
@@ -303,6 +311,7 @@ namespace MobbWeb.Api.Repositories
                                       string Descricao_Anuncio,
                                       decimal Valor_Servico_Anuncio,
                                       int Horas_Servicos_Anuncio,
+                                      string Telefone_Contato_Anuncio,
                                       int ID_Categoria_Anuncio,
                                       int ID_Cidade,
                                       string Url_Imagens_Anuncio,
@@ -316,6 +325,7 @@ namespace MobbWeb.Api.Repositories
         parametros.Add("Descricao_Anuncio", Descricao_Anuncio);
         parametros.Add("Valor_Servico_Anuncio", Valor_Servico_Anuncio);
         parametros.Add("Horas_Servicos_Anuncio", Horas_Servicos_Anuncio);
+        parametros.Add("Telefone_Contato_Anuncio", Telefone_Contato_Anuncio);
         parametros.Add("ID_Categoria_Anuncio", ID_Categoria_Anuncio);
         parametros.Add("ID_Cidade", ID_Cidade);
         parametros.Add("Url_Imagens_Anuncio", Url_Imagens_Anuncio);
@@ -362,6 +372,122 @@ namespace MobbWeb.Api.Repositories
           throw new Exception(ErrMsg);
         }
       }
+    }
+    #endregion
+
+    #region Lista Comentários do Anúncio
+    public async Task<List<OutComentario>> ListaComentariosAnuncio(int ID_Anuncio){
+      DynamicParameters parametros = new DynamicParameters();
+      parametros.Add("ID_Anuncio", ID_Anuncio);
+
+      using (var conn = _db.Connection){
+        string sql = @"SELECT Comentarios_Anuncio.ID_Comentario_Anuncio,
+                              Comentarios_Anuncio.ID_Anuncio,
+                              Pessoas.ID_Pessoa,
+                              Pessoas.Nome_Pessoa,
+                              Comentarios_Anuncio.Comentario,
+                              Comentarios_Anuncio.ID_Comentario_Anuncio_Pai
+                       FROM dbo.Comentarios_Anuncio WITH (NOLOCK)
+                            INNER JOIN dbo.Pessoas WITH (NOLOCK)
+                            ON Pessoas.ID_Pessoa = Comentarios_Anuncio.ID_Pessoa
+                       WHERE ID_Anuncio = @ID_Anuncio";
+
+        var data = await conn.QueryAsync<dynamic>(sql: sql,
+                                                  param: parametros,
+                                                  commandType: CommandType.Text);
+
+        List<OutComentario> comentarios = new List<OutComentario>();
+
+        comentarios.AddRange(data.Select(c =>{
+          OutComentario comentario = new OutComentario();
+
+          comentario.idComentarioAnuncio = c.ID_Comentario_Anuncio;
+          comentario.idAnuncio = c.ID_Anuncio;
+          comentario.idPessoa = c.ID_Pessoa;
+          comentario.nomePessoa = c.Nome_Pessoa;
+          comentario.comentario = c.Comentario;
+          comentario.idComentarioAnuncioPai = c.ID_Comentario_Anuncio_Pai;
+
+          return comentario;
+        }));
+
+        return comentarios;
+      }      
+    }
+    #endregion
+
+    #region Insere Comentário no Anúncio
+    public async Task InsereComentario(int ID_Anuncio,
+                                       int ID_Pessoa,
+                                       string Comentario,
+                                       int ID_Comentario_Anuncio_Pai)
+    {
+      using (var conn = _db.Connection){
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("Comentario", Comentario);
+        parametros.Add("ID_Comentario_Anuncio_Pai", ID_Comentario_Anuncio_Pai);
+        parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+        var data = await conn.QueryAsync(sql: "sp_ComentarioAdd",
+                                         param: parametros,
+                                         commandType: CommandType.StoredProcedure);
+
+        int Return_Code = parametros.Get<Int32>("Return_Code");
+        string ErrMsg = parametros.Get<string>("ErrMsg");
+
+        if (Return_Code > 0)
+        {
+          ErrMsg = ErrMsg.Equals("") ? "Erro ao Inserir Comentário" : ErrMsg;
+          throw new Exception(ErrMsg);
+        }                                        
+      }
+    }
+    #endregion
+
+    #region 
+    public async Task<OutComentariosLista> ListaComentariosAnuncioResposta(int ID_Anuncio){
+      DynamicParameters parametros = new DynamicParameters();
+      parametros.Add("ID_Anuncio", ID_Anuncio);
+
+      using (var conn = _db.Connection){
+        string sql = @"SELECT Comentarios_Anuncio.ID_Comentario_Anuncio,
+                              Comentarios_Anuncio.ID_Anuncio,
+                              Pessoas.ID_Pessoa,
+                              Pessoas.Nome_Pessoa,
+                              Comentarios_Anuncio.Comentario,
+                              Comentarios_Anuncio.ID_Comentario_Anuncio_Pai
+                       FROM dbo.Comentarios_Anuncio WITH (NOLOCK)
+                            INNER JOIN dbo.Pessoas WITH (NOLOCK)
+                            ON Pessoas.ID_Pessoa = Comentarios_Anuncio.ID_Pessoa
+                       WHERE ID_Anuncio = @ID_Anuncio";
+
+        var data = await conn.QueryAsync<dynamic>(sql: sql,
+                                                  param: parametros,
+                                                  commandType: CommandType.Text);
+
+        List<OutComentariosLista> comentarios = new List<OutComentariosLista>();
+
+        comentarios.AddRange(data.Select(c => {
+          OutComentariosLista comentario = new OutComentariosLista();
+
+          comentario.idComentarioAnuncio = c.ID_Comentario_Anuncio;
+          comentario.idAnuncio = c.ID_Anuncio;
+          comentario.idPessoa = c.ID_Pessoa;
+          comentario.nomePessoa = c.Nome_Pessoa;
+          comentario.comentario = c.Comentario;
+          comentario.idComentarioAnuncioPai = c.ID_Comentario_Anuncio_Pai;
+
+          return comentario;
+        }));
+
+        OutComentariosLista comentario = new OutComentariosLista();
+        comentario.Children = comentario.ObeterListaAninhada(comentarios);          
+
+        return comentario;
+      }      
     }
     #endregion
   }
