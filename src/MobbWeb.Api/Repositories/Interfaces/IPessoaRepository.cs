@@ -1,4 +1,5 @@
 using MobbWeb.Api.Models.Output;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MobbWeb.Api.Repositories.Interfaces
 {
@@ -15,11 +16,11 @@ namespace MobbWeb.Api.Repositories.Interfaces
                       string Telefone_Celular,
                       DateTime Data_Nascimento_Pessoa,
                       string Codigo_Usuario_Pessoa,
-                      string Senha_Pessoa,
-                      int ID_Cidade,
+                      string Senha_Pessoa
+                      /*int ID_Cidade,
                       string Logradouro_Endereco,
                       string Bairro_Endereco,
                       string Complemento,
-                      string Numero_Logradouro_Endereco);
+                      string Numero_Logradouro_Endereco*/);    
   }
 }
