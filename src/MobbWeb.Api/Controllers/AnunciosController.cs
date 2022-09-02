@@ -36,6 +36,7 @@ public class AnunciosController : ControllerBase
                                              anuncio.descricaoAnuncio,
                                              anuncio.valorServicoAnuncio,
                                              anuncio.horasServicoAnuncio,
+                                             anuncio.telefoneContatoAnuncio,
                                              anuncio.urlImagensAnuncio);
       return Ok();
     }
@@ -56,8 +57,8 @@ public class AnunciosController : ControllerBase
   {
     try
     {
-      return Ok(await _anuncioRepository.ListaAnuncios(idEstado, 
-                                                       idCidade, 
+      return Ok(await _anuncioRepository.ListaAnuncios(idEstado,
+                                                       idCidade,
                                                        idCategoriaAnuncio));
     }
     catch (Exception ex)
@@ -145,6 +146,7 @@ public class AnunciosController : ControllerBase
                                                anuncio.descricaoAnuncio,
                                                anuncio.valorServicoAnuncio,
                                                anuncio.horasServicoAnuncio,
+                                               anuncio.telefoneContatoAnuncio,
                                                anuncio.idCategoriaAnuncio,
                                                anuncio.idCidade,
                                                anuncio.urlImagensAnuncio,
@@ -168,7 +170,7 @@ public class AnunciosController : ControllerBase
     try
     {
       await _anuncioRepository.DeletaAnuncio(idAnuncio);
-    
+
       return Ok();
     }
     catch (Exception ex)
@@ -177,4 +179,56 @@ public class AnunciosController : ControllerBase
     }
   }
   #endregion
+
+  #region Lista Comentários do Anúncio
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("lista-comentarios-anuncio/{idAnuncio}")]
+  public async Task<IActionResult> ListaComentariosAnuncio(int idAnuncio)
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.ListaComentariosAnuncio(idAnuncio));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+  #endregion
+
+  [Authorize]
+  [HttpPost]
+  [Route("insere-comentario-anuncio")]
+  public async Task<IActionResult> InsereComentario([FromBody] Comentario comentario)
+  {
+    try
+    {
+      await _anuncioRepository.InsereComentario(comentario.idAnuncio,
+                                                comentario.idPessoa,
+                                                comentario.comentario,
+                                                comentario.idComentarioAnuncioPai);
+
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("retorna-lista-comentarios")]
+  public async Task<IActionResult> ListaComentariosAnuncioResposta(int idAnuncio)
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.ListaComentariosAnuncioResposta(idAnuncio));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
 }
