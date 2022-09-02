@@ -116,17 +116,25 @@ public class PessoasController : ControllerBase
                                             pessoa.telefoneCelularPessoa,
                                             pessoa.dataNascimentoPessoa,
                                             pessoa.codigoUsuarioPessoa,
-                                            pessoa.senhaUsuarioPessoa,
-                                            pessoa.idCidade,
+                                            pessoa.senhaUsuarioPessoa
+                                            /*pessoa.idCidade,
                                             pessoa.logradouroEndereco,
                                             pessoa.bairroEndereco,
                                             pessoa.complementoEndereco,
-                                            pessoa.numeroLogradouroEndereco);
+                                            pessoa.numeroLogradouroEndereco*/);
       return Ok();
     }
     catch (Exception ex)
     {    
       return StatusCode(400, ex.Message);       
     }
+  }
+
+  [AllowAnonymous]
+  [HttpPost]
+  [Route("teste")]
+  public ActionResult teste()
+  {
+    return Ok("teste");
   }
 }
