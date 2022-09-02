@@ -131,10 +131,10 @@ public class PessoasController : ControllerBase
   }
 
   [AllowAnonymous]
-  [HttpPost]
+  [HttpGet]
   [Route("teste")]
   public ActionResult teste()
   {
-    return Ok("teste");
+    return Ok("ttste");
   }
 }
