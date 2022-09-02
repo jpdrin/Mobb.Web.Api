@@ -30,7 +30,7 @@ jobs:
     - name: Zip Package
       run: |
          cd ${{ github.workspace }}/out
-         zip -r ${{ github.workspace }}/out.zip *
+         zip -r ${{ github.workspace }}/out1.zip *
          
     - name: Deploy to EB
       uses: einaregilsson/beanstalk-deploy@v20
@@ -41,4 +41,4 @@ jobs:
         environment_name: Mobbwebapi-env
         version_label: ${{ github.sha }}
         region: us-east-1
-        deployment_package: ${{ github.workspace }}/out.zip
+        deployment_package: ${{ github.workspace }}/out1.zip
