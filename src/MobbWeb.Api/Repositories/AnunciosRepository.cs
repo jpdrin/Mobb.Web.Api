@@ -57,10 +57,10 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Lista Anuncios
-    public async Task<List<OutAnuncio>> ListaAnuncios(int ID_Estado,
-                                                      int ID_Cidade,
-                                                      int ID_Categoria_Anuncio)
+    #region Verifica se existem anúncios
+    public async Task<bool> VerificaAnuncios(int ID_Estado,
+                                             int ID_Cidade,
+                                             int ID_Categoria_Anuncio)
     {
       using (var conn = _db.Connection)
       {
@@ -69,31 +69,65 @@ namespace MobbWeb.Api.Repositories
         parametros.Add("ID_Cidade", ID_Cidade);
         parametros.Add("ID_Categoria_Anuncio", ID_Categoria_Anuncio);
 
+        var sql = @"SELECT TOP 1 1
+                    FROM dbo.Anuncios WITH (NOLOCK)
+                        INNER JOIN dbo.Cidades WITH (NOLOCK)
+                        ON Cidades.ID_Cidade = Anuncios.ID_Cidade
+                        INNER JOIN dbo.Estados WITH (NOLOCK)
+                        ON Estados.ID_Estado = Cidades.ID_Estado
+                    WHERE Estados.ID_Estado = @ID_Estado
+                        --//Caso não informado a cidade, listara os anúncios de todo o Estado
+                      AND EXISTS (SELECT TOP 1 1
+                                  WHERE Anuncios.ID_Cidade = @ID_Cidade                
+                                  UNION ALL                
+                                  SELECT TOP 1 1
+                                  WHERE @ID_Cidade = 0)
+                      AND Anuncios.ID_Categoria_Anuncio = @ID_Categoria_Anuncio;";
+
+        var data = await conn.QueryAsync(sql: sql,
+                                         param: parametros,
+                                         commandType: CommandType.Text);
+
+
+        return data.Count() > 0;
+      }
+    }
+    #endregion
+
+    #region Lista Anuncios
+    public async Task<OutAnuncios> ListaAnuncios(int ID_Estado,
+                                                      int ID_Cidade,
+                                                      int ID_Categoria_Anuncio,
+                                                      int offSet,
+                                                      int limite,
+                                                      string ordenacao,
+                                                      string titulo)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Estado", ID_Estado);
+        parametros.Add("ID_Cidade", ID_Cidade);
+        parametros.Add("ID_Categoria_Anuncio", ID_Categoria_Anuncio);
+        parametros.Add("offSet", offSet);
+        parametros.Add("limite", limite);
+        parametros.Add("ordenacao", ordenacao);
+        parametros.Add("titulo", titulo);
+
         return await Task.Run(async () =>
         {
-          string sql = @"SELECT ID_Anuncio            
-                               ,ID_Pessoa             
-                               ,Titulo_Anuncio        
-                               ,Descricao_Anuncio     
-                               ,Valor_Servico_Anuncio 
-                               ,Horas_Servicos_Anuncio
-                               ,Telefone_Contato_Anuncio
-                               ,ID_Categoria_Anuncio  
-                               ,Nome_Categoria_Anuncio
-                               ,ID_Cidade             
-                               ,Nome_Cidade           
-                               ,ID_Estado             
-                               ,Nome_Estado
-                               ,Url_Imagem_Anuncio
-                         FROM dbo.fn_RetornaAnuncios(@ID_Estado, @ID_Cidade, @ID_Categoria_Anuncio);";
-          
-          var data = await conn.QueryAsync<dynamic>(sql: sql,
-                                                    param: parametros,
-                                                    commandType: CommandType.Text);
 
-          List<OutAnuncio> anuncios = new List<OutAnuncio>();
+          var data = await conn.QueryMultipleAsync(sql: "sp_DadosAnuncios",
+                                                   param: parametros,
+                                                   commandType: CommandType.StoredProcedure);
 
-          anuncios.AddRange(data.Select(a =>
+          OutAnuncios outAnuncios = new OutAnuncios();
+          List<dynamic> lista = new List<dynamic>();
+          List<OutAnuncio> listaAnuncios = new List<OutAnuncio>();
+
+          lista = (await data.ReadAsync<dynamic>()).ToList();
+
+          listaAnuncios.AddRange(lista.Select(a =>
           {
             OutAnuncio anuncio = new OutAnuncio();
 
@@ -115,7 +149,11 @@ namespace MobbWeb.Api.Repositories
             return anuncio;
           }));
 
-          return anuncios;
+
+          outAnuncios.listaAnuncios = listaAnuncios;
+          outAnuncios.quantidadeRegistros = (await data.ReadAsync<int>()).FirstOrDefault();
+
+          return outAnuncios;
         });
       }
     }
@@ -376,11 +414,13 @@ namespace MobbWeb.Api.Repositories
     #endregion
 
     #region Lista Comentários do Anúncio
-    public async Task<List<OutComentario>> ListaComentariosAnuncio(int ID_Anuncio){
+    public async Task<List<OutComentario>> ListaComentariosAnuncio(int ID_Anuncio)
+    {
       DynamicParameters parametros = new DynamicParameters();
       parametros.Add("ID_Anuncio", ID_Anuncio);
 
-      using (var conn = _db.Connection){
+      using (var conn = _db.Connection)
+      {
         string sql = @"SELECT Comentarios_Anuncio.ID_Comentario_Anuncio,
                               Comentarios_Anuncio.ID_Anuncio,
                               Pessoas.ID_Pessoa,
@@ -398,7 +438,8 @@ namespace MobbWeb.Api.Repositories
 
         List<OutComentario> comentarios = new List<OutComentario>();
 
-        comentarios.AddRange(data.Select(c =>{
+        comentarios.AddRange(data.Select(c =>
+        {
           OutComentario comentario = new OutComentario();
 
           comentario.idComentarioAnuncio = c.ID_Comentario_Anuncio;
@@ -412,7 +453,7 @@ namespace MobbWeb.Api.Repositories
         }));
 
         return comentarios;
-      }      
+      }
     }
     #endregion
 
@@ -422,7 +463,8 @@ namespace MobbWeb.Api.Repositories
                                        string Comentario,
                                        int ID_Comentario_Anuncio_Pai)
     {
-      using (var conn = _db.Connection){
+      using (var conn = _db.Connection)
+      {
         DynamicParameters parametros = new DynamicParameters();
         parametros.Add("ID_Anuncio", ID_Anuncio);
         parametros.Add("ID_Pessoa", ID_Pessoa);
@@ -442,17 +484,19 @@ namespace MobbWeb.Api.Repositories
         {
           ErrMsg = ErrMsg.Equals("") ? "Erro ao Inserir Comentário" : ErrMsg;
           throw new Exception(ErrMsg);
-        }                                        
+        }
       }
     }
     #endregion
 
     #region 
-    public async Task<OutComentariosLista> ListaComentariosAnuncioResposta(int ID_Anuncio){
+    public async Task<OutComentariosLista> ListaComentariosAnuncioResposta(int ID_Anuncio)
+    {
       DynamicParameters parametros = new DynamicParameters();
       parametros.Add("ID_Anuncio", ID_Anuncio);
 
-      using (var conn = _db.Connection){
+      using (var conn = _db.Connection)
+      {
         string sql = @"SELECT Comentarios_Anuncio.ID_Comentario_Anuncio,
                               Comentarios_Anuncio.ID_Anuncio,
                               Pessoas.ID_Pessoa,
@@ -470,7 +514,8 @@ namespace MobbWeb.Api.Repositories
 
         List<OutComentariosLista> comentarios = new List<OutComentariosLista>();
 
-        comentarios.AddRange(data.Select(c => {
+        comentarios.AddRange(data.Select(c =>
+        {
           OutComentariosLista comentario = new OutComentariosLista();
 
           comentario.idComentarioAnuncio = c.ID_Comentario_Anuncio;
@@ -484,10 +529,64 @@ namespace MobbWeb.Api.Repositories
         }));
 
         OutComentariosLista comentario = new OutComentariosLista();
-        comentario.Children = comentario.ObeterListaAninhada(comentarios);          
+        comentario.Children = comentario.ObeterListaAninhada(comentarios);
 
         return comentario;
-      }      
+      }
+    }
+    #endregion
+
+    #region Lista os anúncios favoritos da pessoa
+    public async Task<List<OutAnuncio>> ListaAnunciosFavoritos(int ID_Pessoa)
+    {
+      using (var conn = _db.Connection)
+      {
+        return await Task.Run(() =>
+        {
+          DynamicParameters parametros = new DynamicParameters();
+          parametros.Add("@ID_Pessoa", ID_Pessoa);
+
+          string sql = @"SELECT Anuncios.ID_Anuncio
+                               ,Anuncios.ID_Pessoa
+                               ,Anuncios.Titulo_Anuncio
+                               ,Anuncios.Descricao_Anuncio
+                               ,Anuncios.Valor_Servico_Anuncio
+                               ,Anuncios.Horas_Servicos_Anuncio
+                               ,Telefone_Contato_Anuncio
+                               ,Categoria_Anuncio.Nome_Categoria_Anuncio
+                         FROM dbo.Anuncios WITH (NOLOCK)     
+                             INNER JOIN dbo.Categoria_Anuncio WITH (NOLOCK)
+                             ON Categoria_Anuncio.ID_Categoria_Anuncio = Anuncios.ID_Categoria_Anuncio
+                             INNER JOIN dbo.Anuncios_Favoritos WITH (NOLOCK)
+                             ON Anuncios_Favoritos.ID_Pessoa   = Anuncios.ID_Pessoa AND
+                                 Anuncios_Favoritos.ID_Anuncio = Anuncios.ID_Anuncio
+                         WHERE Anuncios.ID_Pessoa = @ID_Pessoa;";
+
+          var data = conn.Query<dynamic>(sql: sql,
+                                         param: parametros,
+                                         commandType: CommandType.Text);
+
+          List<OutAnuncio> anuncios = new List<OutAnuncio>();
+
+          anuncios.AddRange(data.Select(c =>
+          {
+            OutAnuncio anuncio = new OutAnuncio();
+
+            anuncio.idAnuncio = c.ID_Anuncio;
+            anuncio.idPessoa = c.ID_Pessoa;
+            anuncio.tituloAnuncio = c.Titulo_Anuncio;
+            anuncio.descricaoAnuncio = c.Descricao_Anuncio;
+            anuncio.valorServicoAnuncio = c.Valor_Servico_Anuncio;
+            anuncio.horasServicoAnuncio = c.Horas_Servicos_Anuncio;
+            anuncio.telefoneContatoAnuncio = c.Telefone_Contato_Anuncio;
+            anuncio.nomeCategoriaAnuncio = c.Nome_Categoria_Anuncio;
+
+            return anuncio;
+          }));
+
+          return anuncios;
+        });
+      }
     }
     #endregion
   }

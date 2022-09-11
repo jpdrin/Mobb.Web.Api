@@ -14,9 +14,16 @@ namespace MobbWeb.Api.Repositories.Interfaces
                        string Telefone_Contato_Anuncio,
                        string Url_Imagens_Anuncio);
 
-    Task<List<OutAnuncio>> ListaAnuncios(int ID_Estado,
+    Task<bool> VerificaAnuncios(int ID_Estado,
+                                int ID_Cidade,
+                                int ID_Categoria_Anuncio);
+    Task<OutAnuncios> ListaAnuncios(int ID_Estado,
                                          int ID_Cidade,
-                                         int ID_Categoria_Anuncio);
+                                         int ID_Categoria_Anuncio,
+                                         int offSet,
+                                         int limite,
+                                         string ordenacao,
+                                         string titulo);
     Task<OutAnuncio> listaAnuncio(int ID_Anuncio);
     Task<List<OutAnuncio>> listaAnunciosPessoa(int ID_Pessoa);
     Task<List<OutCategoriaAnuncio>> ListaCategoriasAnuncio();
@@ -44,5 +51,7 @@ namespace MobbWeb.Api.Repositories.Interfaces
 
     Task<OutComentariosLista> ListaComentariosAnuncioResposta(int ID_Anuncio);
     // Task<List<OutComentariosLista>> ListaComentariosAnuncioResposta(int ID_Anuncio);
+
+    Task<List<OutAnuncio>> ListaAnunciosFavoritos(int ID_Pessoa);
   }
 }

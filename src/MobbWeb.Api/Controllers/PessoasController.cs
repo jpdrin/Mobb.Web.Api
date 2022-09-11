@@ -31,30 +31,37 @@ public class PessoasController : ControllerBase
   [Route("login")]
   public async Task<ActionResult<dynamic>> AutenticacaoAsync([FromBody] PessoaUsuario pessoaInput)
   {
-
-    //Recupera o Usuário do Banco
-    OutPessoaUsuario usuario = new OutPessoaUsuario();
-    usuario = await _pessoasRepository.Login(pessoaInput.codigoUsuarioPessoa,
-                                             pessoaInput.senhaPessoa);
-
-    //Verifica se o usuário existe
-    if (usuario == null)
-      return NotFound(new { message = "Usuário ou senha inválidos" });
-
-    //Gera o Token
-    var token = TokenService.GenerateToken(usuario);
-
-    //Oculta a senha
-    usuario.senhaPessoa = "";
-
-    //Cliente cli = new Cliente();
-
-    //Retorna os dados
-    return new
+    try
     {
-      usuario = usuario,
-      token = token
-    };
+      //Recupera o Usuário do Banco
+      OutPessoaUsuario usuario = new OutPessoaUsuario();
+      usuario = await _pessoasRepository.Login(pessoaInput.codigoUsuarioPessoa,
+                                               pessoaInput.senhaPessoa);
+
+      //Verifica se o usuário existe
+      if (usuario == null)
+        throw new Exception("Usuário ou senha inválidos");
+        // return NotFound(new { message = "Usuário ou senha inválidos" });
+
+      //Gera o Token
+      var token = TokenService.GenerateToken(usuario);
+
+      //Oculta a senha
+      usuario.senhaPessoa = "";
+
+      //Cliente cli = new Cliente();
+
+      //Retorna os dados
+      return new
+      {
+        usuario = usuario,
+        token = token
+      };
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(400, ex.Message);
+    }
   }
 
   [AllowAnonymous]
@@ -125,8 +132,8 @@ public class PessoasController : ControllerBase
       return Ok();
     }
     catch (Exception ex)
-    {    
-      return StatusCode(400, ex.Message);       
+    {
+      return StatusCode(400, ex.Message);
     }
   }
 

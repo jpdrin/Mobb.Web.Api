@@ -47,19 +47,46 @@ public class AnunciosController : ControllerBase
   }
   #endregion
 
+  #region Verifica se existem anúncios  
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("verifica-anuncios/{idEstado}/{idCidade}/{idCategoriaAnuncio}")]
+  public async Task<bool> VerificaAnuncios(int idEstado,
+                                           int idCidade,
+                                           int idCategoriaAnuncio)
+  {
+    try
+    {
+      return await _anuncioRepository.VerificaAnuncios(idEstado, idCidade, idCategoriaAnuncio);
+    }
+    catch
+    {
+      throw new Exception("Ocorreu um erro na requisição");
+    }
+  }
+  #endregion
+
   #region lista-anuncios
   [AllowAnonymous]
   [HttpGet]
-  [Route("lista-anuncios/{idEstado}/{idCidade}/{idCategoriaAnuncio}")]
+  [Route("lista-anuncios/{idEstado}/{idCidade}/{idCategoriaAnuncio}/{offSet}/{limite}")]
   public async Task<IActionResult> ListaAnuncios(int idEstado,
                                                  int idCidade,
-                                                 int idCategoriaAnuncio)
+                                                 int idCategoriaAnuncio,
+                                                 int offSet,
+                                                 int limite,
+                                                 string ordenacao = "",
+                                                 string titulo = "")
   {
     try
     {
       return Ok(await _anuncioRepository.ListaAnuncios(idEstado,
                                                        idCidade,
-                                                       idCategoriaAnuncio));
+                                                       idCategoriaAnuncio,
+                                                       offSet,
+                                                       limite,
+                                                       ordenacao,
+                                                       titulo));
     }
     catch (Exception ex)
     {
@@ -225,6 +252,21 @@ public class AnunciosController : ControllerBase
     try
     {
       return Ok(await _anuncioRepository.ListaComentariosAnuncioResposta(idAnuncio));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("anuncios-favoritos/{idPessoa}")]
+  public async Task<IActionResult> ListaAnunciosFavoritos(int idPessoa)
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.ListaAnunciosFavoritos(idPessoa));
     }
     catch (Exception ex)
     {
