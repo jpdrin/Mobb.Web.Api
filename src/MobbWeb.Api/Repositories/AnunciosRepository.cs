@@ -589,5 +589,84 @@ namespace MobbWeb.Api.Repositories
       }
     }
     #endregion
+
+    #region Insere anúncio na listagem de favoritos da Pessoa
+    public async Task InsereAnuncioFavorito(int ID_Pessoa, 
+                                            int ID_Anuncio)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+        parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+        var data = await conn.QueryAsync(sql: "sp_AnuncioFavoritoAdd",
+                                         param: parametros,
+                                         commandType: CommandType.StoredProcedure);
+
+        int Return_Code = parametros.Get<Int32>("Return_Code");
+        string ErrMsg = parametros.Get<string>("ErrMsg");
+
+        if (Return_Code > 0)
+        {
+          ErrMsg = ErrMsg.Equals("") ? "Erro ao inserir anúncio em favoritos" : ErrMsg;
+          throw new Exception(ErrMsg);
+        }
+      }
+    }
+    #endregion
+
+    #region Verifica se o anúncio está favoritado
+    public async Task<bool> VerificaAnuncioFavorito(int ID_Pessoa,
+                                                    int ID_Anuncio)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+
+        string sql = @"SELECT TOP 1 1
+                       FROM dbo.Anuncios_Favoritos WITH (NOLOCK)
+                       WHERE ID_Pessoa  = @ID_Pessoa
+                         AND ID_Anuncio = @ID_Anuncio;";
+
+        var data = await conn.QueryAsync(sql: sql,
+                                         param: parametros,
+                                         commandType: CommandType.Text);
+        return data.Count() > 0;
+      }
+    }
+    #endregion
+
+    #region Remove o anúncios dos favoritos
+    public async Task RemoveAnuncioFavorito(int ID_Pessoa, 
+                                            int ID_Anuncio)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+        parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+        var data = await conn.QueryAsync(sql: "sp_AnuncioFavoritoDel",
+                                         param: parametros,
+                                         commandType: CommandType.StoredProcedure);
+
+        int Return_Code = parametros.Get<Int32>("Return_Code");
+        string ErrMsg = parametros.Get<string>("ErrMsg");
+
+        if (Return_Code > 0)
+        {
+          ErrMsg = ErrMsg.Equals("") ? "Erro ao remover o anúncio dos favoritos" : ErrMsg;
+          throw new Exception(ErrMsg);
+        }
+      }
+    }                                            
+    #endregion
   }
 }

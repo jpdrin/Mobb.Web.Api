@@ -273,4 +273,57 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+
+  [Authorize]  
+  [HttpPost]
+  [Route("insere-anuncio-favorito/{idPessoa}/{idAnuncio}")]
+  public async Task<IActionResult> InsereAnuncioFavorito(int idPessoa,
+                                                         int idAnuncio)
+  {
+    try
+    {
+      await _anuncioRepository.InsereAnuncioFavorito(idPessoa, 
+                                                     idAnuncio);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("verifica-anuncio-favorito/{idPessoa}/{idAnuncio}")]
+  public async Task<bool> VerificaAnuncioFavorito(int idPessoa,
+                                                  int idAnuncio)
+  {
+    try
+    {
+      return await _anuncioRepository.VerificaAnuncioFavorito(idPessoa,
+                                                              idAnuncio); 
+    }
+    catch (Exception)
+    {
+      throw new Exception("Ocorreu um erro na requisição");
+    }
+  }
+
+  [Authorize]
+  [HttpDelete]
+  [Route("remove-anuncio-favorito/{idPessoa}/{idAnuncio}")]
+  public async Task<IActionResult> RemoveAnuncioFavorito(int idPessoa,
+                                                         int idAnuncio)
+  {
+    try
+    {
+      await _anuncioRepository.RemoveAnuncioFavorito(idPessoa,
+                                                     idAnuncio);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }                                                         
 }
