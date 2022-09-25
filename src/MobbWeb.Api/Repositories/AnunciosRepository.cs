@@ -145,6 +145,7 @@ namespace MobbWeb.Api.Repositories
             anuncio.idEstado = a.ID_Estado;
             anuncio.nomeEstado = a.Nome_Estado;
             anuncio.UrlImagemAnuncio = a.Url_Imagem_Anuncio;
+            anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
 
             return anuncio;
           }));
@@ -167,27 +168,21 @@ namespace MobbWeb.Api.Repositories
           DynamicParameters parametros = new DynamicParameters();
           parametros.Add("@ID_Anuncio", ID_Anuncio);
 
-          string sql = @"SELECT Anuncios.ID_Anuncio
-                               ,Anuncios.ID_Pessoa
-                               ,Anuncios.Titulo_Anuncio
-                               ,Anuncios.Descricao_Anuncio
-                               ,Anuncios.Valor_Servico_Anuncio
-                               ,Anuncios.Horas_Servicos_Anuncio
-                               ,Anuncios.Telefone_Contato_Anuncio
-                               ,Categoria_Anuncio.ID_Categoria_Anuncio
-                               ,Categoria_Anuncio.Nome_Categoria_Anuncio
-                               ,Cidades.ID_Cidade
-                               ,Cidades.Nome_Cidade
-                               ,Estados.ID_Estado
-                               ,Estados.Nome_Estado
-                         FROM dbo.Anuncios WITH (NOLOCK)     
-                              INNER JOIN dbo.Categoria_Anuncio WITH (NOLOCK)
-                              ON Categoria_Anuncio.ID_Categoria_Anuncio = Anuncios.ID_Categoria_Anuncio
-                              INNER JOIN dbo.Cidades WITH (NOLOCK)
-                              ON Cidades.ID_Cidade = Anuncios.ID_Cidade
-                              INNER JOIN dbo.Estados WITH (NOLOCK)
-                              ON Estados.ID_Estado = Cidades.ID_Estado
-                         WHERE ID_Anuncio = @ID_Anuncio";
+          string sql = @"SELECT ID_Anuncio
+                               ,ID_Pessoa
+                               ,Titulo_Anuncio
+                               ,Descricao_Anuncio
+                               ,Valor_Servico_Anuncio
+                               ,Horas_Servicos_Anuncio
+                               ,Telefone_Contato_Anuncio
+                               ,ID_Categoria_Anuncio
+                               ,Nome_Categoria_Anuncio
+                               ,ID_Cidade
+                               ,Nome_Cidade
+                               ,ID_Estado
+                               ,Nome_Estado
+                               ,Avaliacao_Anuncio
+                         FROM dbo.fn_RetornaAnuncio(@ID_Anuncio)";
 
           var data = await conn.QueryAsync<dynamic>(sql: sql,
                                                     param: parametros,
@@ -209,6 +204,7 @@ namespace MobbWeb.Api.Repositories
             anuncio.nomeCidade = a.Nome_Cidade;
             anuncio.idEstado = a.ID_Estado;
             anuncio.nomeEstado = a.Nome_Estado;
+            anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
 
             return anuncio;
           }).FirstOrDefault();
@@ -667,6 +663,85 @@ namespace MobbWeb.Api.Repositories
         }
       }
     }                                            
+    #endregion
+
+    #region
+    public async Task InsereAvaliacaoAnuncio (int ID_Anuncio,
+                                              int ID_Pessoa,
+                                              int Avaliacao_Anuncio)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("Avaliacao_Anuncio", Avaliacao_Anuncio);
+        parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+        var data = await conn.QueryAsync(sql: "sp_AvaliacaoAdd",
+                                         param: parametros,
+                                         commandType: CommandType.StoredProcedure);
+
+        int Return_Code = parametros.Get<Int32>("Return_Code");
+        string ErrMsg = parametros.Get<string>("ErrMsg");
+
+        if (Return_Code > 0)
+        {
+          ErrMsg = ErrMsg.Equals("") ? "Erro ao avaliar o anúncio" : ErrMsg;
+          throw new Exception(ErrMsg);
+        }
+      }
+    }                                              
+    #endregion
+
+    #region Retorna a avaliação da pessoa no anúncio
+    public async Task<decimal> AvaliacaoAnuncioPessoa (int ID_Anuncio, 
+                                                       int ID_Pessoa)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+
+        string sql = @"SELECT TOP 1 Avaliacao_Anuncio AS avaliacaoAnuncioPessoa
+                       FROM dbo.Avaliacoes_Anuncio WITH (NOLOCK)
+                       WHERE ID_Anuncio = @ID_Anuncio
+                         AND ID_Pessoa  = @ID_Pessoa;";
+
+        var data = await conn.QueryAsync<decimal>(sql: sql,
+                                                  param: parametros,
+                                                  commandType: CommandType.Text);      
+        return data.FirstOrDefault();
+      }
+    }
+    #endregion
+
+    #region Exclui o comentário
+    public async Task DeletaComentarioAnuncio (int ID_Comentario)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("@ID_Comentario", ID_Comentario);
+        parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+        var data = await conn.QueryAsync(sql: "sp_ComentarioDel",
+                                         param: parametros,
+                                         commandType: CommandType.StoredProcedure);
+
+        int Return_Code = parametros.Get<Int32>("Return_Code");
+        string ErrMsg = parametros.Get<string>("ErrMsg");
+
+        if (Return_Code > 0)
+        {
+          ErrMsg = ErrMsg.Equals("") ? "Erro ao excluir o comentário do anúncio" : ErrMsg;
+          throw new Exception(ErrMsg);
+        }
+      }
+    }
     #endregion
   }
 }

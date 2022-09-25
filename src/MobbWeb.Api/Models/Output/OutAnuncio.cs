@@ -16,5 +16,7 @@ namespace MobbWeb.Api.Models.Output
     public int idEstado {get; set;}
     public string? nomeEstado {get; set;}
     public string? UrlImagemAnuncio {get; set;}
+    public decimal? avaliacaoAnuncio {get; set;}
+    public decimal? avaliacaoAnuncioPessoa {get; set;}
   }
 }

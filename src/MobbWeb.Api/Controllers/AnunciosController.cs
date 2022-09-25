@@ -325,5 +325,58 @@ public class AnunciosController : ControllerBase
     {
       return StatusCode(500, ex.Message);
     }
-  }                                                         
+  }
+
+  [Authorize]
+  [HttpPost]
+  [Route("insere-avaliacao-anuncio/{idAnuncio}/{idPessoa}/{avaliacao}")]
+  public async Task<IActionResult> InsereAvaliacaoAnuncio(int idAnuncio,
+                                                          int idPessoa,
+                                                          int avaliacao)
+  {
+    try
+    {
+      await _anuncioRepository.InsereAvaliacaoAnuncio(idAnuncio,
+                                                      idPessoa,
+                                                      avaliacao);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [Authorize]
+  [HttpGet]
+  [Route("avaliacao-anuncio-pessoa/{idAnuncio}/{idPessoa}")]
+  public async Task<decimal> AvaliacaoAnuncioPessoa(int idAnuncio,
+                                                int idPessoa)
+  {
+    try
+    {
+      return await _anuncioRepository.AvaliacaoAnuncioPessoa(idAnuncio, 
+                                                             idPessoa);
+    }
+    catch
+    {
+      throw new Exception("Ocorreu um erro na requisição");
+    }
+  }
+
+  [Authorize]
+  [HttpDelete]
+  [Route("deleta-comentario-anuncio/{idComentario}")]
+  public async Task<IActionResult> DeletaComentarioAnuncio (int idComentario)
+  {
+    try
+    {
+      await _anuncioRepository.DeletaComentarioAnuncio(idComentario);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
 }

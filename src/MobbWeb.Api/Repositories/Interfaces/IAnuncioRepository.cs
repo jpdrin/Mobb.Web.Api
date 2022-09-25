@@ -62,5 +62,14 @@ namespace MobbWeb.Api.Repositories.Interfaces
 
     Task RemoveAnuncioFavorito(int ID_Pessoa,
                                int ID_Anuncio);
+
+    Task InsereAvaliacaoAnuncio (int ID_Anuncio,
+                                 int ID_Pessoa,
+                                 int Avaliacao_Anuncio);
+
+    Task<decimal> AvaliacaoAnuncioPessoa (int ID_Anuncio, 
+                                          int ID_Pessoa);
+
+    Task DeletaComentarioAnuncio (int ID_Comentario);
   }
 }
