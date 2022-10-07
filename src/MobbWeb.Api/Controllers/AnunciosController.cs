@@ -379,4 +379,115 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+
+  [Authorize]
+  [HttpGet]
+  [Route("relatorio-anuncios-cadastrados-pessoa")]
+  public async Task<IActionResult> RelAnunciosCadPessoa (int idPessoa,
+                                                         int idCategoriaAnuncio,
+                                                         DateTime dataCadastroInicial,
+                                                         DateTime dataCadastroFinal,
+                                                         int avaliacaoInicial,
+                                                         int avaliacaoFinal)
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.RelAnunciosCadPessoa(idPessoa,
+                                                              idCategoriaAnuncio,
+                                                              dataCadastroInicial,
+                                                              dataCadastroFinal,
+                                                              avaliacaoInicial,
+                                                              avaliacaoFinal));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+
+  }
+
+  [Authorize]
+  [HttpGet]
+  [Route("relatorio-interacoes-anuncios-cadastrados-pessoa")]
+  public async Task<IActionResult> RelInteracoesAnunciosCadPessoa (int idPessoa,
+                                                                   int idCategoriaAnuncio,
+                                                                   DateTime dataCadastroInicial,
+                                                                   DateTime dataCadastroFinal,
+                                                                   int avaliacaoInicial,
+                                                                   int avaliacaoFinal)
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.RelInteracoesAnunciosCadPessoa(idPessoa,
+                                                                        idCategoriaAnuncio,
+                                                                        dataCadastroInicial,
+                                                                        dataCadastroFinal,
+                                                                        avaliacaoInicial,
+                                                                        avaliacaoFinal));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }        
+
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("relatorio-interacoes-anuncios-favoritos-pessoa")]
+  public async Task<IActionResult> RelInteracoesAnunciosFavPessoa (int idPessoa,
+                                                                   int idCategoriaAnuncio,
+                                                                   DateTime dataCadastroInicial,
+                                                                   DateTime dataCadastroFinal,
+                                                                   int avaliacaoInicial,
+                                                                   int avaliacaoFinal)
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.RelInteracoesAnunciosFavPessoa(idPessoa,
+                                                                        idCategoriaAnuncio,
+                                                                        dataCadastroInicial,
+                                                                        dataCadastroFinal,
+                                                                        avaliacaoInicial,
+                                                                        avaliacaoFinal));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }                                                   
+
+  [Authorize]
+  [HttpPost]
+  [Route("insere-mensagem-anuncio/{idAnuncio}/{idPessoa}")]
+  public async Task<IActionResult> InsereMensagemAnuncio(int idAnuncio, 
+                                                         int idPessoa)
+  {
+    try
+    {
+      await _anuncioRepository.InsereMensagemAnuncio(idAnuncio,
+                                                     idPessoa);
+
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("verifica-interacao-anuncio/{idAnuncio}/{idPessoa}")]
+  public async Task<bool> VerificaInteracaoAnuncio(int idAnuncio,
+                                                   int idPessoa)
+  {
+    try
+    {
+      return await _anuncioRepository.VerificaInteracaoAnuncio(idAnuncio, idPessoa);
+    }
+    catch
+    {
+      throw new Exception("Ocorreu um erro na requisição");
+    }
+  }
 }

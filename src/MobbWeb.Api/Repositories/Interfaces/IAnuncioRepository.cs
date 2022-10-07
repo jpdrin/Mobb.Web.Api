@@ -54,7 +54,7 @@ namespace MobbWeb.Api.Repositories.Interfaces
 
     Task<List<OutAnuncio>> ListaAnunciosFavoritos(int ID_Pessoa);
 
-    Task InsereAnuncioFavorito(int ID_Pessoa, 
+    Task InsereAnuncioFavorito(int ID_Pessoa,
                                int ID_Anuncio);
 
     Task<bool> VerificaAnuncioFavorito(int ID_Pessoa,
@@ -63,13 +63,40 @@ namespace MobbWeb.Api.Repositories.Interfaces
     Task RemoveAnuncioFavorito(int ID_Pessoa,
                                int ID_Anuncio);
 
-    Task InsereAvaliacaoAnuncio (int ID_Anuncio,
+    Task InsereAvaliacaoAnuncio(int ID_Anuncio,
                                  int ID_Pessoa,
                                  int Avaliacao_Anuncio);
 
-    Task<decimal> AvaliacaoAnuncioPessoa (int ID_Anuncio, 
+    Task<decimal> AvaliacaoAnuncioPessoa(int ID_Anuncio,
                                           int ID_Pessoa);
 
-    Task DeletaComentarioAnuncio (int ID_Comentario);
+    Task DeletaComentarioAnuncio(int ID_Comentario);
+
+    Task<List<OutRelAnuncio>> RelAnunciosCadPessoa(int ID_Pessoa,
+                                                   int ID_Categoria_Anuncio,
+                                                   DateTime Data_Cadastro_Inicial,
+                                                   DateTime Data_Cadastro_Final,
+                                                   int Avaliacao_Inicial,
+                                                   int Avaliacao_Final);
+
+    Task<List<OutRelAnuncio>> RelInteracoesAnunciosCadPessoa(int ID_Pessoa,
+                                                              int ID_Categoria_Anuncio,
+                                                              DateTime Data_Cadastro_Inicial,
+                                                              DateTime Data_Cadastro_Final,
+                                                              int Avaliacao_Inicial,
+                                                              int Avaliacao_Final);
+
+    Task<List<OutRelAnuncio>> RelInteracoesAnunciosFavPessoa(int ID_Pessoa,
+                                                             int ID_Categoria_Anuncio,
+                                                             DateTime Data_Cadastro_Inicial,
+                                                             DateTime Data_Cadastro_Final,
+                                                             int Avaliacao_Inicial,
+                                                             int Avaliacao_Final);
+
+    Task InsereMensagemAnuncio(int ID_Anuncio,
+                               int ID_Pessoa);
+
+    Task<bool> VerificaInteracaoAnuncio(int ID_Anuncio, 
+                                        int ID_Pessoa);
   }
 }

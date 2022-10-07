@@ -587,7 +587,7 @@ namespace MobbWeb.Api.Repositories
     #endregion
 
     #region Insere anúncio na listagem de favoritos da Pessoa
-    public async Task InsereAnuncioFavorito(int ID_Pessoa, 
+    public async Task InsereAnuncioFavorito(int ID_Pessoa,
                                             int ID_Anuncio)
     {
       using (var conn = _db.Connection)
@@ -638,7 +638,7 @@ namespace MobbWeb.Api.Repositories
     #endregion
 
     #region Remove o anúncios dos favoritos
-    public async Task RemoveAnuncioFavorito(int ID_Pessoa, 
+    public async Task RemoveAnuncioFavorito(int ID_Pessoa,
                                             int ID_Anuncio)
     {
       using (var conn = _db.Connection)
@@ -662,11 +662,11 @@ namespace MobbWeb.Api.Repositories
           throw new Exception(ErrMsg);
         }
       }
-    }                                            
+    }
     #endregion
 
     #region
-    public async Task InsereAvaliacaoAnuncio (int ID_Anuncio,
+    public async Task InsereAvaliacaoAnuncio(int ID_Anuncio,
                                               int ID_Pessoa,
                                               int Avaliacao_Anuncio)
     {
@@ -692,11 +692,11 @@ namespace MobbWeb.Api.Repositories
           throw new Exception(ErrMsg);
         }
       }
-    }                                              
+    }
     #endregion
 
     #region Retorna a avaliação da pessoa no anúncio
-    public async Task<decimal> AvaliacaoAnuncioPessoa (int ID_Anuncio, 
+    public async Task<decimal> AvaliacaoAnuncioPessoa(int ID_Anuncio,
                                                        int ID_Pessoa)
     {
       using (var conn = _db.Connection)
@@ -712,14 +712,14 @@ namespace MobbWeb.Api.Repositories
 
         var data = await conn.QueryAsync<decimal>(sql: sql,
                                                   param: parametros,
-                                                  commandType: CommandType.Text);      
+                                                  commandType: CommandType.Text);
         return data.FirstOrDefault();
       }
     }
     #endregion
 
     #region Exclui o comentário
-    public async Task DeletaComentarioAnuncio (int ID_Comentario)
+    public async Task DeletaComentarioAnuncio(int ID_Comentario)
     {
       using (var conn = _db.Connection)
       {
@@ -740,6 +740,222 @@ namespace MobbWeb.Api.Repositories
           ErrMsg = ErrMsg.Equals("") ? "Erro ao excluir o comentário do anúncio" : ErrMsg;
           throw new Exception(ErrMsg);
         }
+      }
+    }
+    #endregion
+
+    #region Relatório Dados Cadastrais Anuncio
+    public async Task<List<OutRelAnuncio>> RelAnunciosCadPessoa(int ID_Pessoa,
+                                                                int ID_Categoria_Anuncio,
+                                                                DateTime Data_Cadastro_Inicial,
+                                                                DateTime Data_Cadastro_Final,
+                                                                int Avaliacao_Inicial,
+                                                                int Avaliacao_Final)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("ID_Categoria_Anuncio", ID_Categoria_Anuncio);
+        parametros.Add("Data_Cadastro_Inicial", Data_Cadastro_Inicial);
+        parametros.Add("Data_Cadastro_Final", Data_Cadastro_Final);
+        parametros.Add("Avaliacao_Inicial", Avaliacao_Inicial);
+        parametros.Add("Avaliacao_Final", Avaliacao_Final);
+
+        return await Task.Run(async () =>
+        {
+
+          var data = await conn.QueryAsync(sql: "sp_RelAnunciosCadPessoa",
+                                                   param: parametros,
+                                                   commandType: CommandType.StoredProcedure);
+
+          OutRelAnuncio outAnuncios = new OutRelAnuncio();
+          List<OutRelAnuncio> lista = new List<OutRelAnuncio>();
+
+          lista.AddRange(data.Select(a =>
+          {
+            OutRelAnuncio anuncio = new OutRelAnuncio();
+
+            anuncio.idAnuncio = a.ID_Anuncio;
+            anuncio.idPessoa = a.ID_Pessoa;
+            anuncio.tituloAnuncio = a.Titulo_Anuncio;
+            anuncio.valorServicoAnuncio = a.Valor_Servico_Anuncio;
+            anuncio.horasServicoAnuncio = a.Horas_Servicos_Anuncio;
+            anuncio.telefoneContatoAnuncio = a.Telefone_Contato_Anuncio;
+            anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
+            anuncio.nomeCidade = a.Nome_Cidade;
+            anuncio.ufEstado= a.UF_Estado;
+            anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
+            anuncio.dataCadastroAnuncio = a.Data_Hora_Inclusao_Anuncio;
+
+            return anuncio;
+          }));
+
+          return lista;
+        });
+      }
+    }
+    #endregion
+
+    #region Relatório de Interações dos Meus Anúncios
+    public async Task<List<OutRelAnuncio>> RelInteracoesAnunciosCadPessoa(int ID_Pessoa,
+                                                                          int ID_Categoria_Anuncio,
+                                                                          DateTime Data_Cadastro_Inicial,
+                                                                          DateTime Data_Cadastro_Final,
+                                                                          int Avaliacao_Inicial,
+                                                                          int Avaliacao_Final)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("ID_Categoria_Anuncio", ID_Categoria_Anuncio);
+        parametros.Add("Data_Cadastro_Inicial", Data_Cadastro_Inicial);
+        parametros.Add("Data_Cadastro_Final", Data_Cadastro_Final);
+        parametros.Add("Avaliacao_Inicial", Avaliacao_Inicial);
+        parametros.Add("Avaliacao_Final", Avaliacao_Final);
+
+        return await Task.Run(async () =>
+        {
+
+          var data = await conn.QueryAsync(sql: "sp_RelInteracoesAnunciosCadPessoa",
+                                           param: parametros,
+                                           commandType: CommandType.StoredProcedure);
+
+          OutRelAnuncio outAnuncios = new OutRelAnuncio();
+          List<OutRelAnuncio> lista = new List<OutRelAnuncio>();
+
+          lista.AddRange(data.Select(a =>
+          {
+            OutRelAnuncio anuncio = new OutRelAnuncio();
+
+            anuncio.idAnuncio = a.ID_Anuncio;
+            anuncio.idPessoa = a.ID_Pessoa;
+            anuncio.tituloAnuncio = a.Titulo_Anuncio;
+            anuncio.valorServicoAnuncio = a.Valor_Servico_Anuncio;
+            anuncio.horasServicoAnuncio = a.Horas_Servicos_Anuncio;            
+            anuncio.dataCadastroAnuncio = a.Data_Hora_Inclusao_Anuncio;
+            anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
+            anuncio.qtdAvaliacoesAnuncio = a.Quantidade_Avaliacoes;
+            anuncio.qtdMensagensRecebidas = a.Quantidade_Msgs_Recebidas;
+            anuncio.qtdComentariosAnuncio = a.Quantidade_Comentarios;
+            anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
+            anuncio.nomeCidade = a.Nome_Cidade;
+            anuncio.ufEstado= a.UF_Estado;
+          
+            return anuncio;
+          }));
+
+          return lista;
+        });
+      }
+    }
+    #endregion
+
+    #region Relatório de Interações dos Favoritos
+    public async Task<List<OutRelAnuncio>> RelInteracoesAnunciosFavPessoa(int ID_Pessoa,
+                                                                          int ID_Categoria_Anuncio,
+                                                                          DateTime Data_Cadastro_Inicial,
+                                                                          DateTime Data_Cadastro_Final,
+                                                                          int Avaliacao_Inicial,
+                                                                          int Avaliacao_Final)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("ID_Categoria_Anuncio", ID_Categoria_Anuncio);
+        parametros.Add("Data_Cadastro_Inicial", Data_Cadastro_Inicial);
+        parametros.Add("Data_Cadastro_Final", Data_Cadastro_Final);
+        parametros.Add("Avaliacao_Inicial", Avaliacao_Inicial);
+        parametros.Add("Avaliacao_Final", Avaliacao_Final);
+
+        return await Task.Run(async () =>
+        {
+
+          var data = await conn.QueryAsync(sql: "sp_RelInteracoesAnunciosFavPessoa",
+                                           param: parametros,
+                                           commandType: CommandType.StoredProcedure);
+
+          OutRelAnuncio outAnuncios = new OutRelAnuncio();
+          List<OutRelAnuncio> lista = new List<OutRelAnuncio>();
+
+          lista.AddRange(data.Select(a =>
+          {
+            OutRelAnuncio anuncio = new OutRelAnuncio();
+
+            anuncio.idAnuncio = a.ID_Anuncio;
+            anuncio.idPessoa = a.ID_Pessoa;
+            anuncio.tituloAnuncio = a.Titulo_Anuncio;
+            anuncio.valorServicoAnuncio = a.Valor_Servico_Anuncio;
+            anuncio.horasServicoAnuncio = a.Horas_Servicos_Anuncio;                        
+            anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
+            anuncio.interacaoMensagem = a.Interacao_Mensagem;
+            anuncio.avaliacaoAnuncioPessoa = a.Avaliacao_Anuncio_Pessoa;
+            anuncio.qtdComentariosRealizados = a.Quantidade_Comentarios;
+            anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
+            anuncio.nomeCidade = a.Nome_Cidade;
+            anuncio.ufEstado= a.UF_Estado;
+          
+            return anuncio;
+          }));
+
+          return lista;
+        });
+      }
+    }
+    #endregion
+
+    #region Insere Mensagem Anúncio
+    public async Task InsereMensagemAnuncio(int ID_Anuncio,
+                                            int ID_Pessoa)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("Return_Code", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        parametros.Add("ErrMsg", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+        var data = await conn.QueryAsync(sql: "sp_MensagemAnuncioAdd",
+                                         param: parametros,
+                                         commandType: CommandType.StoredProcedure);
+
+        int Return_Code = parametros.Get<Int32>("Return_Code");
+        string ErrMsg = parametros.Get<string>("ErrMsg");
+
+        if (Return_Code > 0)
+        {
+          ErrMsg = ErrMsg.Equals("") ? "Erro ao Inserir Mensagem" : ErrMsg;
+          throw new Exception(ErrMsg);
+        }
+      }
+    }
+    #endregion
+
+    #region Verifica Interação Anúncio
+    public async Task<bool> VerificaInteracaoAnuncio(int ID_Anuncio, 
+                                                     int ID_Pessoa)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Anuncio", ID_Anuncio);
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+
+        var sql = @"SELECT TOP 1 1
+                    FROM dbo.Mensagens_Anuncio WITH (NOLOCK)
+                    WHERE CAST(Data_Hora_Mensagem AS DATE) < CAST(GETDATE() AS DATE)
+                      AND ID_Anuncio = @ID_Anuncio
+                      AND ID_Pessoa  = @ID_Pessoa;";
+
+        var data = await conn.QueryAsync(sql: sql,
+                                         param: parametros,
+                                         commandType: CommandType.Text);
+
+
+        return data.Count() > 0;
       }
     }
     #endregion
