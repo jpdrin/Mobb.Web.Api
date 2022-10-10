@@ -454,7 +454,35 @@ public class AnunciosController : ControllerBase
     {
       return StatusCode(500, ex.Message);
     }
-  }                                                   
+  }
+
+  
+  [AllowAnonymous]
+  [HttpGet]
+  [Route("relatorio-anuncios-estatistico")]
+  public async Task<IActionResult> RelEstatisticasAnuncios (int idCategoriaAnuncio,
+                                                            int idEstado,
+                                                            int idCidade,
+                                                            DateTime dataCadastroInicial,
+                                                            DateTime dataCadastroFinal,
+                                                            int avaliacaoInicial,
+                                                            int avaliacaoFinal)
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.RelEstatisticasAnuncios(idCategoriaAnuncio,
+                                                                 idEstado,
+                                                                 idCidade,
+                                                                 dataCadastroInicial,
+                                                                 dataCadastroFinal,
+                                                                 avaliacaoInicial,
+                                                                 avaliacaoFinal));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
 
   [Authorize]
   [HttpPost]
@@ -475,7 +503,7 @@ public class AnunciosController : ControllerBase
     }
   }
 
-  [AllowAnonymous]
+  [Authorize]
   [HttpGet]
   [Route("verifica-interacao-anuncio/{idAnuncio}/{idPessoa}")]
   public async Task<bool> VerificaInteracaoAnuncio(int idAnuncio,

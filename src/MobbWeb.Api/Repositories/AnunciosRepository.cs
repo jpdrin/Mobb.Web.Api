@@ -906,6 +906,66 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
+
+
+
+
+    #region Relatório Anuncios Sintético
+    public async Task<List<OutRelAnuncio>> RelEstatisticasAnuncios(int ID_Categoria_Anuncio,
+                                                                   int ID_Estado,
+                                                                   int ID_Cidade,
+                                                                   DateTime Data_Cadastro_Inicial,
+                                                                   DateTime Data_Cadastro_Final,
+                                                                   int Avaliacao_Inicial,
+                                                                   int Avaliacao_Final)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Categoria_Anuncio", ID_Categoria_Anuncio);
+        parametros.Add("ID_Estado", ID_Estado);
+        parametros.Add("ID_Cidade", ID_Cidade);
+        parametros.Add("Data_Cadastro_Inicial", Data_Cadastro_Inicial);
+        parametros.Add("Data_Cadastro_Final", Data_Cadastro_Final);
+        parametros.Add("Avaliacao_Inicial", Avaliacao_Inicial);
+        parametros.Add("Avaliacao_Final", Avaliacao_Final);
+
+        return await Task.Run(async () =>
+        {
+
+          var data = await conn.QueryAsync(sql: "sp_RelEstatisticasAnuncios",
+                                           param: parametros,
+                                           commandType: CommandType.StoredProcedure);
+
+          OutRelAnuncio outAnuncios = new OutRelAnuncio();
+          List<OutRelAnuncio> lista = new List<OutRelAnuncio>();
+
+          lista.AddRange(data.Select(a =>
+          {
+            OutRelAnuncio anuncio = new OutRelAnuncio();
+
+            anuncio.qtdAnuncios = a.Quantidade_Anuncios;
+            anuncio.mediaAvaliacao = a.Media_Avaliacao;            
+            anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
+            anuncio.nomeCidade = a.Nome_Cidade;
+            anuncio.ufEstado= a.UF_Estado;
+          
+            return anuncio;
+          }));
+
+          return lista;
+        });
+      }
+    }
+    #endregion
+
+
+
+
+
+
+
+
     #region Insere Mensagem Anúncio
     public async Task InsereMensagemAnuncio(int ID_Anuncio,
                                             int ID_Pessoa)

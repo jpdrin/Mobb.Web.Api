@@ -19,7 +19,7 @@ namespace MobbWeb.Api.Models.Output
       public int? qtdComentariosAnuncio {get; set;}
       public int? qtdComentariosRealizados {get; set;}
       public string? interacaoMensagem {get; set;}
-
-      
+      public int? qtdAnuncios {get; set;}
+      public string? mediaAvaliacao {get; set;}      
     }
 }

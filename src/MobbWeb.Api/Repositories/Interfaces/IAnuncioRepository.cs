@@ -98,5 +98,13 @@ namespace MobbWeb.Api.Repositories.Interfaces
 
     Task<bool> VerificaInteracaoAnuncio(int ID_Anuncio, 
                                         int ID_Pessoa);
+
+    Task<List<OutRelAnuncio>> RelEstatisticasAnuncios(int ID_Categoria_Anuncio,
+                                                      int ID_Estado,
+                                                      int ID_Cidade,
+                                                      DateTime Data_Cadastro_Inicial,
+                                                      DateTime Data_Cadastro_Final,
+                                                      int Avaliacao_Inicial,
+                                                      int Avaliacao_Final);
   }
 }
