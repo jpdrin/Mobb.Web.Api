@@ -10,9 +10,8 @@ namespace MobbWeb.Api.Models.Input
     public string? descricaoAnuncio { get; set; }
     public decimal valorServicoAnuncio { get; set; }
     public int horasServicoAnuncio { get; set; }
-    public string telefoneContatoAnuncio {get; set;}
-    public string? urlImagensAnuncio {get; set;}
-    
+    public string? telefoneContatoAnuncio {get; set;}
+    public string? urlImagensAnuncio {get; set;}    
     public string? urlImagensAnuncioDel {get; set;}
   }
 }

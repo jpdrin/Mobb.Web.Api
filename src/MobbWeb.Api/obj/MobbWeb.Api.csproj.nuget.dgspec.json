@@ -1,32 +1,28 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj": {}
+    "D:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj": {}
   },
   "projects": {
-    "C:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj": {
+    "D:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj",
+        "projectUniqueName": "D:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj",
         "projectName": "MobbWeb.Api",
-        "projectPath": "C:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj",
+        "projectPath": "D:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\MobbWeb.Api.csproj",
         "packagesPath": "C:\\Users\\JP\\.nuget\\packages\\",
-        "outputPath": "C:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\obj\\",
+        "outputPath": "D:\\Mobb\\Mobb.Web.Api\\src\\MobbWeb.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\JP\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\JP\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -45,6 +41,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Aspose.Email": {
+              "target": "Package",
+              "version": "[22.9.0, )"
+            },
             "Dapper": {
               "target": "Package",
               "version": "[2.0.123, )"
