@@ -19,9 +19,9 @@ namespace MobbWeb.Services
 
         Subject = new ClaimsIdentity(new[]{
                     new Claim(ClaimTypes.Name, pessoa.codigoUsuarioPessoa),
-                    new Claim(ClaimTypes.Role, pessoa.email),
+                    new Claim(ClaimTypes.Role, pessoa.emailPessoa),
                 }),
-        Expires = DateTime.UtcNow.AddMinutes(60),
+        Expires = DateTime.UtcNow.AddMinutes(90),
         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
       };
 

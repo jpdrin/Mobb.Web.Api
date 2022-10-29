@@ -15,7 +15,7 @@ namespace MobbWeb.Api.Repositories
       _db = dbSession;
     }
 
-    #region Insere Anuncio
+    #region Insere anúncio
     public async Task InsereAnuncio(int ID_Pessoa,
                                     int ID_Categoria_Anuncio,
                                     int ID_Cidade,
@@ -57,7 +57,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Verifica se existem anúncios
+    #region Verifica se existe anúncios
     public async Task<bool> VerificaAnuncios(int ID_Estado,
                                              int ID_Cidade,
                                              int ID_Categoria_Anuncio)
@@ -94,7 +94,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Lista Anuncios
+    #region Lista anúncios
     public async Task<OutAnuncios> ListaAnuncios(int ID_Estado,
                                                       int ID_Cidade,
                                                       int ID_Categoria_Anuncio,
@@ -144,8 +144,10 @@ namespace MobbWeb.Api.Repositories
             anuncio.nomeCidade = a.Nome_Cidade;
             anuncio.idEstado = a.ID_Estado;
             anuncio.nomeEstado = a.Nome_Estado;
+            anuncio.ufEstado = a.UF_Estado;
             anuncio.UrlImagemAnuncio = a.Url_Imagem_Anuncio;
             anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
+            anuncio.nomePessoa = a.Nome_Pessoa;
 
             return anuncio;
           }));
@@ -159,7 +161,7 @@ namespace MobbWeb.Api.Repositories
       }
     }
 
-    public async Task<OutAnuncio> listaAnuncio(int ID_Anuncio)
+    public async Task<OutAnuncio> ListaAnuncio(int ID_Anuncio)
     {
       using (var conn = _db.Connection)
       {
@@ -181,7 +183,10 @@ namespace MobbWeb.Api.Repositories
                                ,Nome_Cidade
                                ,ID_Estado
                                ,Nome_Estado
+                               ,UF_Estado
                                ,Avaliacao_Anuncio
+                               ,Nome_Pessoa
+                               ,Data_Hora_Inclusao_Anuncio
                          FROM dbo.fn_RetornaAnuncio(@ID_Anuncio)";
 
           var data = await conn.QueryAsync<dynamic>(sql: sql,
@@ -204,7 +209,10 @@ namespace MobbWeb.Api.Repositories
             anuncio.nomeCidade = a.Nome_Cidade;
             anuncio.idEstado = a.ID_Estado;
             anuncio.nomeEstado = a.Nome_Estado;
+            anuncio.ufEstado = a.UF_Estado;
             anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
+            anuncio.nomePessoa = a.Nome_Pessoa;
+            anuncio.dataHoraInclusaoAnuncio = a.Data_Hora_Inclusao_Anuncio;
 
             return anuncio;
           }).FirstOrDefault();
@@ -213,60 +221,135 @@ namespace MobbWeb.Api.Repositories
         return outAnuncio;
       }
     }
-    #endregion
 
-    #region Lista anúncios da pessoa
-    public async Task<List<OutAnuncio>> listaAnunciosPessoa(int ID_Pessoa)
+    public async Task<OutAnuncios> ListaAnunciosPessoa(int ID_Pessoa,
+                                                      int offSet,
+                                                      int limite,
+                                                      string ordenacao,
+                                                      string titulo)
     {
       using (var conn = _db.Connection)
       {
-        return await Task.Run(() =>
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("offSet", offSet);
+        parametros.Add("limite", limite);
+        parametros.Add("ordenacao", ordenacao);
+        parametros.Add("titulo", titulo);
+
+        return await Task.Run(async () =>
         {
-          DynamicParameters parametros = new DynamicParameters();
-          parametros.Add("@ID_Pessoa", ID_Pessoa);
 
-          string sql = @"SELECT Anuncios.ID_Anuncio
-                               ,Anuncios.ID_Pessoa
-                               ,Anuncios.Titulo_Anuncio
-                               ,Anuncios.Descricao_Anuncio
-                               ,Anuncios.Valor_Servico_Anuncio
-                               ,Anuncios.Horas_Servicos_Anuncio
-                               ,Telefone_Contato_Anuncio
-                               ,Categoria_Anuncio.Nome_Categoria_Anuncio
-                         FROM dbo.Anuncios WITH (NOLOCK)     
-                              INNER JOIN dbo.Categoria_Anuncio WITH (NOLOCK)
-                              ON Categoria_Anuncio.ID_Categoria_Anuncio = Anuncios.ID_Categoria_Anuncio
-                         WHERE ID_Pessoa = @ID_Pessoa";
+          var data = await conn.QueryMultipleAsync(sql: "sp_DadosAnunciosPessoa",
+                                                   param: parametros,
+                                                   commandType: CommandType.StoredProcedure);
 
-          var data = conn.Query<dynamic>(sql: sql,
-                                         param: parametros,
-                                         commandType: CommandType.Text);
+          OutAnuncios outAnuncios = new OutAnuncios();
+          List<dynamic> lista = new List<dynamic>();
+          List<OutAnuncio> listaAnuncios = new List<OutAnuncio>();
 
-          List<OutAnuncio> anuncios = new List<OutAnuncio>();
+          lista = (await data.ReadAsync<dynamic>()).ToList();
 
-          anuncios.AddRange(data.Select(c =>
+          listaAnuncios.AddRange(lista.Select(a =>
           {
             OutAnuncio anuncio = new OutAnuncio();
 
-            anuncio.idAnuncio = c.ID_Anuncio;
-            anuncio.idPessoa = c.ID_Pessoa;
-            anuncio.tituloAnuncio = c.Titulo_Anuncio;
-            anuncio.descricaoAnuncio = c.Descricao_Anuncio;
-            anuncio.valorServicoAnuncio = c.Valor_Servico_Anuncio;
-            anuncio.horasServicoAnuncio = c.Horas_Servicos_Anuncio;
-            anuncio.telefoneContatoAnuncio = c.Telefone_Contato_Anuncio;
-            anuncio.nomeCategoriaAnuncio = c.Nome_Categoria_Anuncio;
+            anuncio.idAnuncio = a.ID_Anuncio;
+            anuncio.idPessoa = a.ID_Pessoa;
+            anuncio.tituloAnuncio = a.Titulo_Anuncio;
+            anuncio.descricaoAnuncio = a.Descricao_Anuncio;
+            anuncio.valorServicoAnuncio = a.Valor_Servico_Anuncio;
+            anuncio.horasServicoAnuncio = a.Horas_Servicos_Anuncio;
+            anuncio.telefoneContatoAnuncio = a.Telefone_Contato_Anuncio;
+            anuncio.idCategoriaAnuncio = a.ID_Categoria_Anuncio;
+            anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
+            anuncio.idCidade = a.ID_Cidade;
+            anuncio.nomeCidade = a.Nome_Cidade;
+            anuncio.idEstado = a.ID_Estado;
+            anuncio.nomeEstado = a.Nome_Estado;
+            anuncio.ufEstado = a.UF_Estado;
+            anuncio.UrlImagemAnuncio = a.Url_Imagem_Anuncio;
+            anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
+            anuncio.nomePessoa = a.Nome_Pessoa;
 
             return anuncio;
           }));
 
-          return anuncios;
+
+          outAnuncios.listaAnuncios = listaAnuncios;
+          outAnuncios.quantidadeRegistros = (await data.ReadAsync<int>()).FirstOrDefault();
+
+          return outAnuncios;
         });
       }
     }
     #endregion
 
-    #region Lista categorias do anúncio
+    #region Lista os anúncios favoritos da Pessoa
+    public async Task<OutAnuncios> ListaAnunciosFavoritos(int ID_Pessoa,
+                                                          int offSet,
+                                                          int limite,
+                                                          string ordenacao,
+                                                          string titulo)
+    {
+      using (var conn = _db.Connection)
+      {
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("ID_Pessoa", ID_Pessoa);
+        parametros.Add("offSet", offSet);
+        parametros.Add("limite", limite);
+        parametros.Add("ordenacao", ordenacao);
+        parametros.Add("titulo", titulo);
+
+        return await Task.Run(async () =>
+        {
+
+          var data = await conn.QueryMultipleAsync(sql: "sp_DadosAnunciosFavPessoa",
+                                                   param: parametros,
+                                                   commandType: CommandType.StoredProcedure);
+
+          OutAnuncios outAnuncios = new OutAnuncios();
+          List<dynamic> lista = new List<dynamic>();
+          List<OutAnuncio> listaAnuncios = new List<OutAnuncio>();
+
+          lista = (await data.ReadAsync<dynamic>()).ToList();
+
+          listaAnuncios.AddRange(lista.Select(a =>
+          {
+            OutAnuncio anuncio = new OutAnuncio();
+
+            anuncio.idAnuncio = a.ID_Anuncio;
+            anuncio.idPessoa = a.ID_Pessoa;
+            anuncio.tituloAnuncio = a.Titulo_Anuncio;
+            anuncio.descricaoAnuncio = a.Descricao_Anuncio;
+            anuncio.valorServicoAnuncio = a.Valor_Servico_Anuncio;
+            anuncio.horasServicoAnuncio = a.Horas_Servicos_Anuncio;
+            anuncio.telefoneContatoAnuncio = a.Telefone_Contato_Anuncio;
+            anuncio.idCategoriaAnuncio = a.ID_Categoria_Anuncio;
+            anuncio.nomeCategoriaAnuncio = a.Nome_Categoria_Anuncio;
+            anuncio.idCidade = a.ID_Cidade;
+            anuncio.nomeCidade = a.Nome_Cidade;
+            anuncio.idEstado = a.ID_Estado;
+            anuncio.nomeEstado = a.Nome_Estado;
+            anuncio.ufEstado = a.UF_Estado;
+            anuncio.UrlImagemAnuncio = a.Url_Imagem_Anuncio;
+            anuncio.avaliacaoAnuncio = a.Avaliacao_Anuncio;
+            anuncio.nomePessoa = a.Nome_Pessoa;
+
+            return anuncio;
+          }));
+
+
+          outAnuncios.listaAnuncios = listaAnuncios;
+          outAnuncios.quantidadeRegistros = (await data.ReadAsync<int>()).FirstOrDefault();
+
+          return outAnuncios;
+        });
+      }
+    }
+    #endregion
+
+    #region Lista as categorias dos anúncios
     public async Task<List<OutCategoriaAnuncio>> ListaCategoriasAnuncio()
     {
       using (var conn = _db.Connection)
@@ -298,7 +381,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Lista imagens do anúncio
+    #region Lista as imagens dos anúncios
     public async Task<List<OutImagensAnuncio>> ListaImagensAnuncio(int ID_Anuncio)
     {
       using (var conn = _db.Connection)
@@ -339,7 +422,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Atualiza Anúncio
+    #region Atualiza os dados do anúncio
     public async Task AtualizaAnuncio(int ID_Anuncio,
                                       string Titulo_Anuncio,
                                       string Descricao_Anuncio,
@@ -383,7 +466,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Deleta Anúncio
+    #region Deleta o anúncio
     public async Task DeletaAnuncio(int ID_Anuncio)
     {
       using (var conn = _db.Connection)
@@ -409,7 +492,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Lista Comentários do Anúncio
+    #region Lista os comentários do anúncio
     public async Task<List<OutComentario>> ListaComentariosAnuncio(int ID_Anuncio)
     {
       DynamicParameters parametros = new DynamicParameters();
@@ -453,7 +536,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Insere Comentário no Anúncio
+    #region Insere comentário no Anúncio
     public async Task InsereComentario(int ID_Anuncio,
                                        int ID_Pessoa,
                                        string Comentario,
@@ -485,7 +568,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region 
+    #region Lista os comentários resposta do anúncio
     public async Task<OutComentariosLista> ListaComentariosAnuncioResposta(int ID_Anuncio)
     {
       DynamicParameters parametros = new DynamicParameters();
@@ -532,8 +615,8 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Lista os anúncios favoritos da pessoa
-    public async Task<List<OutAnuncio>> ListaAnunciosFavoritos(int ID_Pessoa)
+    #region Lista os ID dos anúncios favoritos da pessoa
+    public async Task<List<int>> ListaIDAnunciosFavoritos(int ID_Pessoa)
     {
       using (var conn = _db.Connection)
       {
@@ -542,51 +625,25 @@ namespace MobbWeb.Api.Repositories
           DynamicParameters parametros = new DynamicParameters();
           parametros.Add("@ID_Pessoa", ID_Pessoa);
 
-          string sql = @"SELECT Anuncios.ID_Anuncio
-                               ,Anuncios.ID_Pessoa
-                               ,Anuncios.Titulo_Anuncio
-                               ,Anuncios.Descricao_Anuncio
-                               ,Anuncios.Valor_Servico_Anuncio
-                               ,Anuncios.Horas_Servicos_Anuncio
-                               ,Telefone_Contato_Anuncio
-                               ,Categoria_Anuncio.Nome_Categoria_Anuncio
-                         FROM dbo.Anuncios WITH (NOLOCK)     
-                             INNER JOIN dbo.Categoria_Anuncio WITH (NOLOCK)
-                             ON Categoria_Anuncio.ID_Categoria_Anuncio = Anuncios.ID_Categoria_Anuncio
-                             INNER JOIN dbo.Anuncios_Favoritos WITH (NOLOCK)
-                             ON Anuncios_Favoritos.ID_Pessoa   = Anuncios.ID_Pessoa AND
-                                 Anuncios_Favoritos.ID_Anuncio = Anuncios.ID_Anuncio
-                         WHERE Anuncios.ID_Pessoa = @ID_Pessoa;";
+          string sql = @"SELECT ID_Anuncio
+                         FROM dbo.Anuncios_Favoritos WITH (NOLOCK)
+                         WHERE ID_Pessoa = @ID_Pessoa;";
 
-          var data = conn.Query<dynamic>(sql: sql,
-                                         param: parametros,
-                                         commandType: CommandType.Text);
+          var data = conn.Query<int>(sql: sql,
+                                     param: parametros,
+                                     commandType: CommandType.Text);
 
-          List<OutAnuncio> anuncios = new List<OutAnuncio>();
+          List<int> idAnunciosFavoritos = new List<int>();
 
-          anuncios.AddRange(data.Select(c =>
-          {
-            OutAnuncio anuncio = new OutAnuncio();
+          idAnunciosFavoritos = data.ToList<int>();
 
-            anuncio.idAnuncio = c.ID_Anuncio;
-            anuncio.idPessoa = c.ID_Pessoa;
-            anuncio.tituloAnuncio = c.Titulo_Anuncio;
-            anuncio.descricaoAnuncio = c.Descricao_Anuncio;
-            anuncio.valorServicoAnuncio = c.Valor_Servico_Anuncio;
-            anuncio.horasServicoAnuncio = c.Horas_Servicos_Anuncio;
-            anuncio.telefoneContatoAnuncio = c.Telefone_Contato_Anuncio;
-            anuncio.nomeCategoriaAnuncio = c.Nome_Categoria_Anuncio;
-
-            return anuncio;
-          }));
-
-          return anuncios;
+          return idAnunciosFavoritos;
         });
       }
     }
     #endregion
 
-    #region Insere anúncio na listagem de favoritos da Pessoa
+    #region Adiciona o anúncio em favoritos da pessoa
     public async Task InsereAnuncioFavorito(int ID_Pessoa,
                                             int ID_Anuncio)
     {
@@ -614,7 +671,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Verifica se o anúncio está favoritado
+    #region Verifica se o anúncio está favoritado para a pessoa
     public async Task<bool> VerificaAnuncioFavorito(int ID_Pessoa,
                                                     int ID_Anuncio)
     {
@@ -637,7 +694,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Remove o anúncios dos favoritos
+    #region Remove o anúncio dos favoritos da pessoa
     public async Task RemoveAnuncioFavorito(int ID_Pessoa,
                                             int ID_Anuncio)
     {
@@ -665,7 +722,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region
+    #region Insere a avaliação no anúncio
     public async Task InsereAvaliacaoAnuncio(int ID_Anuncio,
                                               int ID_Pessoa,
                                               int Avaliacao_Anuncio)
@@ -695,7 +752,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Retorna a avaliação da pessoa no anúncio
+    #region Lista a avaliação feita pela pessoa no anúncio
     public async Task<decimal> AvaliacaoAnuncioPessoa(int ID_Anuncio,
                                                        int ID_Pessoa)
     {
@@ -718,7 +775,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Exclui o comentário
+    #region Deleta o comentário do anúncio
     public async Task DeletaComentarioAnuncio(int ID_Comentario)
     {
       using (var conn = _db.Connection)
@@ -744,7 +801,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Relatório Dados Cadastrais Anuncio
+    #region Lista os dados do relatório dos dados cadastrais dos anúncios
     public async Task<List<OutRelAnuncio>> RelAnunciosCadPessoa(int ID_Pessoa,
                                                                 int ID_Categoria_Anuncio,
                                                                 DateTime Data_Cadastro_Inicial,
@@ -797,7 +854,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Relatório de Interações dos Meus Anúncios
+    #region Lista os dados do relatório das interações nos anúncios da pessoa logada
     public async Task<List<OutRelAnuncio>> RelInteracoesAnunciosCadPessoa(int ID_Pessoa,
                                                                           int ID_Categoria_Anuncio,
                                                                           DateTime Data_Cadastro_Inicial,
@@ -852,7 +909,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Relatório de Interações dos Favoritos
+    #region Lista os dados do relatório de interações com os anúncios favoritos
     public async Task<List<OutRelAnuncio>> RelInteracoesAnunciosFavPessoa(int ID_Pessoa,
                                                                           int ID_Categoria_Anuncio,
                                                                           DateTime Data_Cadastro_Inicial,
@@ -906,11 +963,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-
-
-
-
-    #region Relatório Anuncios Sintético
+    #region Lista os dados do relatório estatístico
     public async Task<List<OutRelAnuncio>> RelEstatisticasAnuncios(int ID_Categoria_Anuncio,
                                                                    int ID_Estado,
                                                                    int ID_Cidade,
@@ -959,14 +1012,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-
-
-
-
-
-
-
-    #region Insere Mensagem Anúncio
+    #region Insere as informações das mensagens do pessoa com anúnciante
     public async Task InsereMensagemAnuncio(int ID_Anuncio,
                                             int ID_Pessoa)
     {
@@ -994,7 +1040,7 @@ namespace MobbWeb.Api.Repositories
     }
     #endregion
 
-    #region Verifica Interação Anúncio
+    #region Verifica se a pessoa realizou interação com o anúncio
     public async Task<bool> VerificaInteracaoAnuncio(int ID_Anuncio, 
                                                      int ID_Pessoa)
     {

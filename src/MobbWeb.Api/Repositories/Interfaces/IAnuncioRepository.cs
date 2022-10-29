@@ -24,8 +24,18 @@ namespace MobbWeb.Api.Repositories.Interfaces
                                          int limite,
                                          string ordenacao,
                                          string titulo);
-    Task<OutAnuncio> listaAnuncio(int ID_Anuncio);
-    Task<List<OutAnuncio>> listaAnunciosPessoa(int ID_Pessoa);
+    Task<OutAnuncio> ListaAnuncio(int ID_Anuncio);
+    Task<OutAnuncios> ListaAnunciosPessoa(int ID_Pessoa,
+                                          int offSet,
+                                          int limite,
+                                          string ordenacao,
+                                          string titulo);
+
+    Task<OutAnuncios> ListaAnunciosFavoritos(int ID_Pessoa,
+                                             int offSet,
+                                             int limite,
+                                             string ordenacao,
+                                             string titulo);
     Task<List<OutCategoriaAnuncio>> ListaCategoriasAnuncio();
     Task<List<OutImagensAnuncio>> ListaImagensAnuncio(int ID_Anuncio);
 
@@ -50,9 +60,8 @@ namespace MobbWeb.Api.Repositories.Interfaces
                           int ID_Comentario_Anuncio_Pai);
 
     Task<OutComentariosLista> ListaComentariosAnuncioResposta(int ID_Anuncio);
-    // Task<List<OutComentariosLista>> ListaComentariosAnuncioResposta(int ID_Anuncio);
 
-    Task<List<OutAnuncio>> ListaAnunciosFavoritos(int ID_Pessoa);
+    Task<List<int>> ListaIDAnunciosFavoritos(int ID_Pessoa);
 
     Task InsereAnuncioFavorito(int ID_Pessoa,
                                int ID_Anuncio);
