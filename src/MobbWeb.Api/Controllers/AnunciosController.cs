@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MobbWeb.Api.Models;
 using MobbWeb.Api.Models.Input;
-using MobbWeb.Api.Repositories;
-using MobbWeb.Services;
 using MobbWeb.Api.Repositories.Interfaces;
 
 namespace MobbWeb.Api.Controllers;
@@ -21,7 +18,7 @@ public class AnunciosController : ControllerBase
     _anuncioRepository = anuncioRepository;
   }
 
-  #region Insere Anuncio
+  #region Insere anúncio
   [Authorize]
   [HttpPost]
   [Route("insere-anuncio")]
@@ -47,7 +44,7 @@ public class AnunciosController : ControllerBase
   }
   #endregion
 
-  #region Verifica se existem anúncios  
+  #region Verifica se existe anúncios  
   [AllowAnonymous]
   [HttpGet]
   [Route("verifica-anuncios/{idEstado}/{idCidade}/{idCategoriaAnuncio}")]
@@ -66,7 +63,7 @@ public class AnunciosController : ControllerBase
   }
   #endregion
 
-  #region lista-anuncios
+  #region Lista anúncios
   [AllowAnonymous]
   [HttpGet]
   [Route("lista-anuncios/{idEstado}/{idCidade}/{idCategoriaAnuncio}/{offSet}/{limite}")]
@@ -101,7 +98,7 @@ public class AnunciosController : ControllerBase
   {
     try
     {
-      return Ok(await _anuncioRepository.listaAnuncio(idAnuncio));
+      return Ok(await _anuncioRepository.ListaAnuncio(idAnuncio));
     }
     catch (Exception ex)
     {
@@ -111,21 +108,53 @@ public class AnunciosController : ControllerBase
 
   [Authorize]
   [HttpGet]
-  [Route("lista-anuncios-pessoa/{idPessoa}")]
-  public async Task<IActionResult> ListaAnunciosPessoa(int idPessoa)
+  [Route("lista-anuncios-pessoa/{idPessoa}/{offSet}/{limite}")]
+  public async Task<IActionResult> ListaAnunciosPessoa(int idPessoa,
+                                                       int offSet,
+                                                       int limite,
+                                                       string ordenacao = "",
+                                                       string titulo = "")
   {
     try
     {
-      return Ok(await _anuncioRepository.listaAnunciosPessoa(idPessoa));
+      return Ok(await _anuncioRepository.ListaAnunciosPessoa(idPessoa,
+                                                             offSet,
+                                                             limite,
+                                                             ordenacao,
+                                                             titulo));
     }
     catch (Exception ex)
     {
-      return StatusCode(400, ex.Message);
+      throw new Exception(ex.Message);
     }
   }
+
+  [Authorize]
+  [HttpGet]
+  [Route("anuncios-favoritos/{idPessoa}/{offSet}/{limite}")]
+  public async Task<IActionResult> ListaAnunciosFavoritos(int idPessoa,
+                                                          int offSet,
+                                                          int limite,
+                                                          string ordenacao = "",
+                                                          string titulo = "")
+  {
+    try
+    {
+      return Ok(await _anuncioRepository.ListaAnunciosFavoritos(idPessoa,
+                                                                offSet,
+                                                                limite,
+                                                                ordenacao,
+                                                                titulo));
+    }
+    catch (Exception ex)
+    {
+      throw new Exception(ex.Message);
+    }
+  }
+  
   #endregion  
 
-  #region Lista categorias do anúncio
+  #region Lista as categorias dos anúncios
   [AllowAnonymous]
   [HttpGet]
   [Route("lista-categorias-anuncio")]
@@ -142,7 +171,7 @@ public class AnunciosController : ControllerBase
   }
   #endregion
 
-  #region  Lista imagens do anúncio
+  #region Lista as imagens dos anúncios
   [AllowAnonymous]
   [HttpGet]
   [Route("lista-imagens-anuncio/{idAnuncio}")]
@@ -160,7 +189,7 @@ public class AnunciosController : ControllerBase
 
   #endregion
 
-  #region Atualiza Anúncio
+  #region Atualiza os dados do anúncio
   [Authorize]
   [HttpPost]
   [Route("atualiza-anuncio")]
@@ -188,7 +217,7 @@ public class AnunciosController : ControllerBase
   }
   #endregion
 
-  #region Deleta Anúncio
+  #region Deleta o anúncio
   [Authorize]
   [HttpDelete]
   [Route("deleta-anuncio/{idAnuncio}")]
@@ -207,7 +236,7 @@ public class AnunciosController : ControllerBase
   }
   #endregion
 
-  #region Lista Comentários do Anúncio
+  #region Lista os comentários do anúncio
   [AllowAnonymous]
   [HttpGet]
   [Route("lista-comentarios-anuncio/{idAnuncio}")]
@@ -224,6 +253,7 @@ public class AnunciosController : ControllerBase
   }
   #endregion
 
+  #region Insere comentário no anúncio
   [Authorize]
   [HttpPost]
   [Route("insere-comentario-anuncio")]
@@ -243,7 +273,9 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Lista os comentários resposta do anúncio
   [AllowAnonymous]
   [HttpGet]
   [Route("retorna-lista-comentarios")]
@@ -258,23 +290,27 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Lista os ID dos anúncios favoritos da pessoa
   [AllowAnonymous]
   [HttpGet]
-  [Route("anuncios-favoritos/{idPessoa}")]
-  public async Task<IActionResult> ListaAnunciosFavoritos(int idPessoa)
+  [Route("id-anuncios-favoritos/{idPessoa}")]
+  public async Task<IActionResult> ListaIDAnunciosFavoritos(int idPessoa)
   {
     try
     {
-      return Ok(await _anuncioRepository.ListaAnunciosFavoritos(idPessoa));
+      return Ok(await _anuncioRepository.ListaIDAnunciosFavoritos(idPessoa));
     }
     catch (Exception ex)
     {
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
-  [Authorize]  
+  #region Adiciona o anúncio em favoritos da pessoa
+  [Authorize]
   [HttpPost]
   [Route("insere-anuncio-favorito/{idPessoa}/{idAnuncio}")]
   public async Task<IActionResult> InsereAnuncioFavorito(int idPessoa,
@@ -282,7 +318,7 @@ public class AnunciosController : ControllerBase
   {
     try
     {
-      await _anuncioRepository.InsereAnuncioFavorito(idPessoa, 
+      await _anuncioRepository.InsereAnuncioFavorito(idPessoa,
                                                      idAnuncio);
       return Ok();
     }
@@ -291,7 +327,9 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Verifica se o anúncio está favoritado para a pessoa
   [AllowAnonymous]
   [HttpGet]
   [Route("verifica-anuncio-favorito/{idPessoa}/{idAnuncio}")]
@@ -301,14 +339,16 @@ public class AnunciosController : ControllerBase
     try
     {
       return await _anuncioRepository.VerificaAnuncioFavorito(idPessoa,
-                                                              idAnuncio); 
+                                                              idAnuncio);
     }
     catch (Exception)
     {
       throw new Exception("Ocorreu um erro na requisição");
     }
   }
+  #endregion
 
+  #region Remove o anúncio dos favoritos da pessoa
   [Authorize]
   [HttpDelete]
   [Route("remove-anuncio-favorito/{idPessoa}/{idAnuncio}")]
@@ -326,7 +366,9 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Insere a avaliação no anúncio
   [Authorize]
   [HttpPost]
   [Route("insere-avaliacao-anuncio/{idAnuncio}/{idPessoa}/{avaliacao}")]
@@ -346,7 +388,9 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Lista a avaliação feita pela pessoa no anúncio
   [Authorize]
   [HttpGet]
   [Route("avaliacao-anuncio-pessoa/{idAnuncio}/{idPessoa}")]
@@ -355,7 +399,7 @@ public class AnunciosController : ControllerBase
   {
     try
     {
-      return await _anuncioRepository.AvaliacaoAnuncioPessoa(idAnuncio, 
+      return await _anuncioRepository.AvaliacaoAnuncioPessoa(idAnuncio,
                                                              idPessoa);
     }
     catch
@@ -363,11 +407,13 @@ public class AnunciosController : ControllerBase
       throw new Exception("Ocorreu um erro na requisição");
     }
   }
+  #endregion
 
+  #region Deleta o comentário do anúncio
   [Authorize]
   [HttpDelete]
   [Route("deleta-comentario-anuncio/{idComentario}")]
-  public async Task<IActionResult> DeletaComentarioAnuncio (int idComentario)
+  public async Task<IActionResult> DeletaComentarioAnuncio(int idComentario)
   {
     try
     {
@@ -379,11 +425,13 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Lista os dados do relatório dos dados cadastrais dos anúncios
   [Authorize]
   [HttpGet]
   [Route("relatorio-anuncios-cadastrados-pessoa")]
-  public async Task<IActionResult> RelAnunciosCadPessoa (int idPessoa,
+  public async Task<IActionResult> RelAnunciosCadPessoa(int idPessoa,
                                                          int idCategoriaAnuncio,
                                                          DateTime dataCadastroInicial,
                                                          DateTime dataCadastroFinal,
@@ -405,11 +453,13 @@ public class AnunciosController : ControllerBase
     }
 
   }
+  #endregion
 
+  #region Lista os dados do relatório das interações nos anúncios da pessoa logada
   [Authorize]
   [HttpGet]
   [Route("relatorio-interacoes-anuncios-cadastrados-pessoa")]
-  public async Task<IActionResult> RelInteracoesAnunciosCadPessoa (int idPessoa,
+  public async Task<IActionResult> RelInteracoesAnunciosCadPessoa(int idPessoa,
                                                                    int idCategoriaAnuncio,
                                                                    DateTime dataCadastroInicial,
                                                                    DateTime dataCadastroFinal,
@@ -429,12 +479,14 @@ public class AnunciosController : ControllerBase
     {
       return StatusCode(500, ex.Message);
     }
-  }        
+  }
+  #endregion
 
-  [AllowAnonymous]
+  #region Lista os dados do relatório de interações com os anúncios favoritos
+  [Authorize]
   [HttpGet]
   [Route("relatorio-interacoes-anuncios-favoritos-pessoa")]
-  public async Task<IActionResult> RelInteracoesAnunciosFavPessoa (int idPessoa,
+  public async Task<IActionResult> RelInteracoesAnunciosFavPessoa(int idPessoa,
                                                                    int idCategoriaAnuncio,
                                                                    DateTime dataCadastroInicial,
                                                                    DateTime dataCadastroFinal,
@@ -455,12 +507,13 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
-  
-  [AllowAnonymous]
+  #region Lista os dados do relatório estatístico
+  [Authorize]
   [HttpGet]
   [Route("relatorio-anuncios-estatistico")]
-  public async Task<IActionResult> RelEstatisticasAnuncios (int idCategoriaAnuncio,
+  public async Task<IActionResult> RelEstatisticasAnuncios(int idCategoriaAnuncio,
                                                             int idEstado,
                                                             int idCidade,
                                                             DateTime dataCadastroInicial,
@@ -483,11 +536,13 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Insere as informações das mensagens do pessoa com anúnciante
   [Authorize]
   [HttpPost]
   [Route("insere-mensagem-anuncio/{idAnuncio}/{idPessoa}")]
-  public async Task<IActionResult> InsereMensagemAnuncio(int idAnuncio, 
+  public async Task<IActionResult> InsereMensagemAnuncio(int idAnuncio,
                                                          int idPessoa)
   {
     try
@@ -502,7 +557,9 @@ public class AnunciosController : ControllerBase
       return StatusCode(500, ex.Message);
     }
   }
+  #endregion
 
+  #region Verifica se a pessoa realizou interação com o anúncio
   [Authorize]
   [HttpGet]
   [Route("verifica-interacao-anuncio/{idAnuncio}/{idPessoa}")]
@@ -518,4 +575,5 @@ public class AnunciosController : ControllerBase
       throw new Exception("Ocorreu um erro na requisição");
     }
   }
+  #endregion
 }
